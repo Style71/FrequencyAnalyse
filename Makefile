@@ -215,8 +215,10 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)/*.d $(BUILD_DIR)/*.lst $(BUILD_DIR)/*.o
-  
+	cd $(BUILD_DIR)
+	del /Q /S "*.d" "*.o" "*.lst"
+	cd ..
+
 #######################################
 # dependencies
 #######################################

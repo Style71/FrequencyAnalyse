@@ -4,7 +4,7 @@
 		{
 			"type": "cppbuild",
 			"label": "C/C++: make 生成活动文件",
-			"command": "make",
+			"command": "mingw32-make",
 			"args": [
 				"-j4"
 			],
@@ -15,7 +15,7 @@
 				"$gcc"
 			],
 			"group": "build",
-			"detail": "编译器: /usr/bin/arm-none-eabi-g++"
+			"detail": "编译器: arm-none-eabi-g++"
 		}
 	]
 }
