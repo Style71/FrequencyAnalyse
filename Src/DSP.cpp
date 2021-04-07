@@ -186,7 +186,7 @@ void PrintLoop()
       if (channelEnable[0])
       {
         USART_Printf(&huart2, "f1 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
-        USART_Printf(&huart1, "f1 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
+        //USART_Printf(&huart1, "f1 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
       }
     }
     if (!signal_100Hz_freq.freq.isEmpty())
@@ -195,7 +195,7 @@ void PrintLoop()
       if (channelEnable[1])
       {
         USART_Printf(&huart2, "f2 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
-        USART_Printf(&huart1, "f2 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
+        //USART_Printf(&huart1, "f2 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
       }
     }
     if (!signal_35Hz_freq.freq.isEmpty())
@@ -204,7 +204,7 @@ void PrintLoop()
       if (channelEnable[2])
       {
         USART_Printf(&huart2, "f3 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
-        USART_Printf(&huart1, "f3 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
+        //USART_Printf(&huart1, "f3 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
       }
     }
     break;
@@ -221,7 +221,7 @@ void PrintLoop()
     if (print_cnt < ONESHOOT_SIZE)
     {
       USART_Printf(&huart2, "%.4f\t", originalInput[print_cnt++]);
-      USART_Printf(&huart1, "%.4f\t", originalInput[print_cnt++]);
+      //USART_Printf(&huart1, "%.4f\t", originalInput[print_cnt++]);
     }
     else
       stage = AfterDump;

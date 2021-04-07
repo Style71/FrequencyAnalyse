@@ -81,7 +81,7 @@ int main(void)
   SCB_EnableICache();
 
   /* Enable D-Cache---------------------------------------------------------*/
-  SCB_EnableDCache();
+  //SCB_EnableDCache();
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -112,9 +112,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
   const char Greetings[] = "Hello world!\n";
   USART_Putchars(&huart2, Greetings, sizeof(Greetings));
-  USART_Putchars(&huart1, Greetings, sizeof(Greetings));
+  //USART_Putchars(&huart1, Greetings, sizeof(Greetings));
 
   InitFilter();
+
+  uint64_t systimeUs = GetUs();
 
   /* USER CODE END 2 */
 
@@ -123,12 +125,14 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
     run_scheduler();
     ExecuteBtnRoutine();
     signal_downsampling();
     UpdateMessage();
-    /* USER CODE BEGIN 3 */
 
+    systimeUs = GetUs();
     /*while (USART2_RX_Stream.size() > 0)
       USART_Putc(&huart1, USART2_RX_Stream.pop_front());
     while (USART1_RX_Stream.size() > 0)

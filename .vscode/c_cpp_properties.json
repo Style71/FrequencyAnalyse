@@ -2,8 +2,8 @@
     "configurations": [
         {
             "name": "ARM",
-            "intelliSenseMode": "gcc-x64",
-            "compilerPath": "arm-none-eabi-g++",
+            "intelliSenseMode": "windows-gcc-arm",
+            "compilerPath": "D:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2020-q4-major/bin/arm-none-eabi-g++.exe",
             "includePath": [
                 "${workspaceFolder}/Inc",
                 "${workspaceFolder}/Drivers/STM32F7xx_HAL_Driver/Inc",

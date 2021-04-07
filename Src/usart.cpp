@@ -21,10 +21,10 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-Queue<unsigned char, 1024> USART1_TX_Stream;
-Queue<unsigned char, 1024> USART1_RX_Stream;
-Queue<unsigned char, 1024> USART2_TX_Stream;
-Queue<unsigned char, 1024> USART2_RX_Stream;
+Queue<unsigned char, USART_TXRX_BUFFER_SIZE> USART1_TX_Stream;
+Queue<unsigned char, USART_TXRX_BUFFER_SIZE> USART1_RX_Stream;
+Queue<unsigned char, USART_TXRX_BUFFER_SIZE> USART2_TX_Stream;
+Queue<unsigned char, USART_TXRX_BUFFER_SIZE> USART2_RX_Stream;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -53,7 +53,7 @@ void MX_USART1_UART_Init(void)
   {
     Error_Handler();
   }
-  HAL_UART_Receive_DMA(&huart1, USART1_RX_Stream.queue, 1024);
+  HAL_UART_Receive_DMA(&huart1, USART1_RX_Stream.queue, USART_TXRX_BUFFER_SIZE);
 }
 /* USART2 init function */
 
@@ -73,7 +73,7 @@ void MX_USART2_UART_Init(void)
   {
     Error_Handler();
   }
-  HAL_UART_Receive_DMA(&huart2, USART2_RX_Stream.queue, 1024);
+  HAL_UART_Receive_DMA(&huart2, USART2_RX_Stream.queue, USART_TXRX_BUFFER_SIZE);
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle)
@@ -282,7 +282,6 @@ void USART_20Hz_Routine()
 
   if (!USART1_TX_Stream.isEmpty())
   {
-
     if (USART1_TX_Stream.get_head() >= USART1_TX_Stream.get_tail())
       uiBytesToTransmit = USART1_TX_Stream.capacity() - USART1_TX_Stream.get_head();
     else
@@ -294,7 +293,6 @@ void USART_20Hz_Routine()
 
   if (!USART2_TX_Stream.isEmpty())
   {
-
     if (USART2_TX_Stream.get_head() >= USART2_TX_Stream.get_tail())
       uiBytesToTransmit = USART2_TX_Stream.capacity() - USART2_TX_Stream.get_head();
     else
@@ -347,7 +345,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     USART1_RX_Stream.set_tail(0);
     USART1_RX_Stream.set_length(USART_TXRX_BUFFER_SIZE - USART1_RX_Stream.get_head());
 
-    HAL_UART_Receive_DMA(huart, USART1_RX_Stream.queue, 1024);
+    HAL_UART_Receive_DMA(huart, USART1_RX_Stream.queue, USART_TXRX_BUFFER_SIZE);
   }
 
   if (huart->Instance == USART2)
@@ -355,21 +353,31 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     USART2_RX_Stream.set_tail(0);
     USART2_RX_Stream.set_length(USART_TXRX_BUFFER_SIZE - USART2_RX_Stream.get_head());
 
-    HAL_UART_Receive_DMA(huart, USART2_RX_Stream.queue, 1024);
+    HAL_UART_Receive_DMA(huart, USART2_RX_Stream.queue, USART_TXRX_BUFFER_SIZE);
   }
 }
 
 void USART_Putchars(UART_HandleTypeDef *huart, const char *pucArray, int size)
 {
+  static uint64_t BytesBufferedTX1 = 0, BytesBufferedTX2 = 0;
   if (huart->Instance == USART1)
   {
     for (int i = 0; i < size; i++)
       USART1_TX_Stream.brute_push_back(pucArray[i]);
+
+    BytesBufferedTX1 += size;
   }
   else if (huart->Instance == USART2)
   {
     for (int i = 0; i < size; i++)
       USART2_TX_Stream.brute_push_back(pucArray[i]);
+
+    BytesBufferedTX2 += size;
+  }
+  bool iswait = false;
+  if ((BytesBufferedTX1 > 1000) || (BytesBufferedTX2 > 1000))
+  {
+    iswait = true;
   }
 }
 
