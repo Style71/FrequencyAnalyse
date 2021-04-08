@@ -165,7 +165,52 @@ void SampleRoutine2(char *pcString)
 	}
 }
 
-uint8_t calculateChecksum(uint8_t *msg, uint32_t len)
+enum MessageParsingState
+{
+	NoMessage = 0,
+	MessageIncoming = 1,
+	ReceivingPayload = 2,
+	Checksum = 3,
+	NewMessage = 4,
+};
+
+class ProtocolStream
+{
+private:
+	MessageParsingState sMessageFlags;
+	uint8_t pucPayload[MAX_PAYLOAD_SIZE];
+	uint8_t ucMsgIndex;
+	uint8_t ucPacketHead;
+
+	void recv_frequency(uint8_t channel, uint8_t *payload);
+	void recv_battery(uint8_t *payload);
+	void recv_channel_enable(uint8_t channel, uint8_t *payload);
+
+	uint8_t calculateChecksum(uint8_t *msg, uint32_t len);
+	void send_packet(uint8_t head, uint8_t *payload, uint32_t payload_len);
+
+public:
+	ProtocolStream(/* args */);
+	~ProtocolStream();
+
+	uint8_t ParsingMessage(uint8_t *msg, uint8_t len);
+
+	void send_battery_info(BatteryStatus &battery);
+	void send_frequency_info(uint8_t channel, WavePara &wave);
+	void send_battery_info(BatteryStatus &battery);
+	void send_channel_enable_info(bool channelEnable[3]);
+};
+
+ProtocolStream::ProtocolStream(/* args */)
+{
+	sMessageFlags = NoMessage;
+}
+
+ProtocolStream::~ProtocolStream()
+{
+}
+
+uint8_t ProtocolStream::calculateChecksum(uint8_t *msg, uint32_t len)
 {
 	uint8_t checksum = msg[0];
 
@@ -175,7 +220,7 @@ uint8_t calculateChecksum(uint8_t *msg, uint32_t len)
 	return checksum;
 }
 
-void sendPackect(uint8_t head, uint8_t *payload, uint32_t payload_len)
+void ProtocolStream::send_packet(uint8_t head, uint8_t *payload, uint32_t payload_len)
 {
 #define MAX_POSSIBLE_PACKECT_LEN 32
 	uint8_t msg[MAX_POSSIBLE_PACKECT_LEN];
@@ -185,10 +230,10 @@ void sendPackect(uint8_t head, uint8_t *payload, uint32_t payload_len)
 	memcpy(&msg[2], payload, payload_len);
 	msg[2 + payload_len] = calculateChecksum(msg, payload_len + 2);
 
-	USART_Putchars(&huart1, msg, payload_len + 3);
+	USART_Putchars(&huart1, (const char *)msg, payload_len + 3);
 }
 
-void sendFreqInfo(uint8_t channel, WavePara wave)
+void ProtocolStream::send_frequency_info(uint8_t channel, WavePara &wave)
 {
 	float temp;
 	uint8_t payload[16];
@@ -218,38 +263,116 @@ void sendFreqInfo(uint8_t channel, WavePara wave)
 	memcpy(&payload[4], &wave.freq, 4);
 	memcpy(&payload[8], &wave.mag, 4);
 
-	sendPackect(head, payload, 16);
+	send_packet(head, payload, 16);
 }
 
-void sendBatteryInfo(uint8_t channel, WavePara wave)
+void ProtocolStream::send_battery_info(BatteryStatus &battery)
 {
-	float temp;
-	uint8_t payload[16];
-	uint8_t head;
-	switch (channel)
-	{
-	case 1:
-		head = 0x51;
-		temp = 1.0 / signal_400Hz_freq.deltaT;
-		memcpy(&payload[12], &temp, 4);
-		break;
-	case 2:
-		head = 0x52;
-		temp = 1.0 / signal_100Hz_freq.deltaT;
-		memcpy(&payload[12], &temp, 4);
-		break;
-	case 3:
-		head = 0x53;
-		temp = 1.0 / signal_35Hz_freq.deltaT;
-		memcpy(&payload[12], &temp, 4);
-		break;
-	default:
-		head = 0x50;
-		break;
-	}
-	memcpy(&payload[0], &wave.t, 4);
-	memcpy(&payload[4], &wave.freq, 4);
-	memcpy(&payload[8], &wave.mag, 4);
+	uint8_t temp;
+	uint8_t payload[9];
+	uint8_t head = 0x59;
 
-	sendPackect(head, payload, 16);
+	memcpy(&payload[0], &battery.t, 4);
+	memcpy(&payload[4], &battery.voltage, 2);
+	memcpy(&payload[6], &battery.current, 2);
+	temp = (uint8_t)battery.capacity;
+	memcpy(&payload[8], &temp, 1);
+
+	send_packet(head, payload, 9);
+}
+
+void ProtocolStream::send_channel_enable_info(bool channelEnable[3])
+{
+	uint8_t payload[3];
+	uint8_t head = 0x5F;
+
+	for (int i = 0; i < 3; i++)
+		payload[i] = channelEnable[i] ? 1 : 0;
+	send_packet(head, payload, 3);
+}
+
+uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
+{
+	uint8_t ret = 0x00;
+
+	uint8_t i = 0;
+	while (i < len)
+	{
+		switch (sMessageFlags)
+		{
+		case NoMessage: // While the state machine is in idle state.
+			if (msg[i] == 0x5A)
+			{
+				// Get a possible packet head, change to incoming state.
+				sMessageFlags = MessageIncoming;
+			}
+			// Discard the character if it is not '0x5A'.
+			break;
+		case MessageIncoming: // While the state machine is in incoming state.
+			switch (msg[i])
+			{
+			case 0x51:
+			case 0x52:
+			case 0x53:
+			case 0x59:
+			case 0x5F:
+				// Get a packet head, change to new state and record the payload.
+				sMessageFlags = ReceivingPayload;
+				// Reset the packet message index.
+				ucMsgIndex = 0;
+				// Store the packet head.
+				ucPacketHead = msg[i];
+				break;
+			default:
+				// Reset to idle state.
+				sMessageFlags = NoMessage;
+				break;
+			}
+		case ReceivingPayload: // While the state machine is in payload receiving state.
+			pucPayload[ucMsgIndex++] = msg[i];
+			if ((ucPacketHead == 0x51) || (ucPacketHead == 0x52) || (ucPacketHead == 0x53))
+			{
+				if (ucMsgIndex == 16)
+					sMessageFlags = Checksum; // Set to checksum state.
+			}
+			if (ucPacketHead == 0x59)
+			{
+				if (ucMsgIndex == 9)
+					sMessageFlags = Checksum; // Set to checksum state.
+			}
+			if (ucPacketHead == 0x5F)
+			{
+				if (ucMsgIndex == 3)
+					sMessageFlags = Checksum; // Set to checksum state.
+			}
+			break;
+		case Checksum: // While the state machine is in checksum state.
+			if (calculateChecksum(pucPayload, ucMsgIndex) == msg[i])
+			{
+				switch (ucPacketHead)
+				{
+				case 0x51:
+				case 0x52:
+				case 0x53:
+
+					break;
+				case 0x59:
+
+					break;
+				case 0x5F:
+
+					break;
+				default:
+					break;
+				}
+				ret = ucPacketHead;
+			}
+			break;
+		default:
+			break;
+		}
+		i++;
+	}
+
+	return ret;
 }

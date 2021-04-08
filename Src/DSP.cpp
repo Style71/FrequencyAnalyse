@@ -69,6 +69,9 @@ int oneshoot_count = ONESHOOT_SIZE;
 PrintState stage = Normal;
 bool channelEnable[3] = {true, true, true};
 
+BatteryStatus BattStatus;
+static double BattEstTotalCapacity = 450; // Battery estimated capacity in mAh.
+
 static bool isInRun = false;
 
 void calculate_max_amp_freq(FreqWave *pFreqwave)
@@ -167,6 +170,13 @@ void signal_downsampling()
             calculate_max_amp_freq(&signal_35Hz_freq);
         }
       }
+
+      // Handle battery state.
+      uint32_t lastBattRecordTime = BattStatus.t;
+      BattStatus.t = GetUs();
+      BattStatus.voltage = 3300;
+      BattStatus.current = 140;
+      BattStatus.capacity -= (BattStatus.t - lastBattRecordTime) * (BattStatus.current / (3.6e9 * BattEstTotalCapacity));
     }
   }
 }

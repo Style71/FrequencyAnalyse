@@ -32,6 +32,20 @@ typedef struct
     uint16_t lowerbound;                        // Lower bound index of the main frequency of the input signal.
 } FreqWave;
 
+typedef struct _BattStatus
+{
+    uint32_t t;
+    uint16_t voltage;
+    uint16_t current;
+    double capacity;
+    _BattStatus()
+    {
+        t = 0;
+        voltage = 0;
+        current = 0;
+        capacity = 100;
+    }
+} BatteryStatus;
 //extern float testOutput[NPT];
 //void arm_rfft_fast_f32_app(void);
 

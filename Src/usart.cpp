@@ -364,20 +364,13 @@ void USART_Putchars(UART_HandleTypeDef *huart, const char *pucArray, int size)
   {
     for (int i = 0; i < size; i++)
       USART1_TX_Stream.brute_push_back(pucArray[i]);
-
     BytesBufferedTX1 += size;
   }
   else if (huart->Instance == USART2)
   {
     for (int i = 0; i < size; i++)
       USART2_TX_Stream.brute_push_back(pucArray[i]);
-
     BytesBufferedTX2 += size;
-  }
-  bool iswait = false;
-  if ((BytesBufferedTX1 > 1000) || (BytesBufferedTX2 > 1000))
-  {
-    iswait = true;
   }
 }
 

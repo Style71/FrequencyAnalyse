@@ -10,10 +10,11 @@
 #include "SysTime.h"
 #include "main.h"
 
-#define TICKS_PER_US	216  // Equals to SystemCoreClock/1M
+#define TICKS_PER_US 216 // Equals to SystemCoreClock/1M
 
 static uint64_t ullSysTicks = 0;
 static uint64_t ullLastSysTicks;
+uint64_t ullSysTimeUs = 0;
 
 /**
   * @brief System Clock Configuration
@@ -77,7 +78,8 @@ uint64_t GetSysTicks()
 
 uint64_t GetUs()
 {
-	return (ullSysTicks + ((SysTick->LOAD & SysTick_LOAD_RELOAD_Msk) - (SysTick->VAL & SysTick_VAL_CURRENT_Msk)))/TICKS_PER_US;
+  ullSysTimeUs = (ullSysTicks + ((SysTick->LOAD & SysTick_LOAD_RELOAD_Msk) - (SysTick->VAL & SysTick_VAL_CURRENT_Msk))) / TICKS_PER_US;
+  return ullSysTimeUs;
 }
 
 void Tick()
@@ -134,6 +136,7 @@ void SysTick_Handler(void)
   //Update system time ticks.
   /* USER CODE BEGIN SysTick_IRQn 0 */
   ullSysTicks += (SysTick->LOAD & SysTick_LOAD_RELOAD_Msk) + 1;
+  ullSysTimeUs = ullSysTicks / TICKS_PER_US;
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */

@@ -115,9 +115,6 @@ int main(void)
   //USART_Putchars(&huart1, Greetings, sizeof(Greetings));
 
   InitFilter();
-
-  uint64_t systimeUs = GetUs();
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -131,8 +128,6 @@ int main(void)
     ExecuteBtnRoutine();
     signal_downsampling();
     UpdateMessage();
-
-    systimeUs = GetUs();
     /*while (USART2_RX_Stream.size() > 0)
       USART_Putc(&huart1, USART2_RX_Stream.pop_front());
     while (USART1_RX_Stream.size() > 0)
