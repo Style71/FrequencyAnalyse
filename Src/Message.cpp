@@ -371,3 +371,38 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 
 	return ret;
 }
+
+uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
+{
+	bool isReparsing = false;
+	uint8_t byte;
+
+	int i = 0;
+	while (i < len)
+	{
+		if (!isReparsing)
+		{
+			byte = msg[i++];
+			enqueue(byte);
+		}
+		else
+		{
+			byte = enqueue[ucBufferIndex++];
+		}
+		// Process byte
+		{
+			if (getPacket)
+				dequeue(PacketLen);
+			else
+			{
+				sMessageFlags = NoMessage;
+				ucBufferIndex = 0;
+				dequeue one byte;
+			}
+		}
+		if ((sMessageFlags == NoMessage) && (queue.len > 0))
+		{
+			isReparsing = true;
+		}
+	}
+}
