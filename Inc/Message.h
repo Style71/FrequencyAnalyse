@@ -61,4 +61,46 @@ void SampleRoutine1(char *pcString);
 //**********************************************************
 void SampleRoutine2(char *pcString);
 
+enum MessageParsingState
+{
+  NoMessage = 0,
+  MessageIncoming = 1,
+  ReceivingPayload = 2,
+  Checksum = 3,
+  NewMessage = 4,
+};
+
+typedef void(recv_frequency_info_callback)(uint8_t channel, WavePara &wave);
+typedef void(recv_battery_info_callback)(BatteryStatus &battery);
+typedef void(recv_channel_enable_info_callback)(bool channelEnable[3]);
+
+class ProtocolStream
+{
+private:
+  MessageParsingState sMessageFlags;
+  uint8_t pucPayload[MAX_PAYLOAD_SIZE];
+  uint8_t ucPayloadIndex;
+  uint8_t pucReparsingBuffer[MAX_PAYLOAD_SIZE];
+  uint8_t ucBufferIndex;
+
+  uint8_t ucPacketHead;
+
+  recv_channel_enable_info_callback *channel_enable_callback;
+  recv_battery_info_callback *battery_callback;
+  recv_frequency_info_callback *frequency_callback;
+
+  uint8_t calculateChecksum(uint8_t *msg, uint32_t len);
+  void send_packet(uint8_t head, uint8_t *payload, uint32_t payload_len);
+  void recv_packet(uint8_t head, uint8_t *payload, uint32_t payload_len);
+
+public:
+  ProtocolStream(recv_channel_enable_info_callback &func_channel_enable, recv_battery_info_callback &func_battery, recv_frequency_info_callback &func_frequency);
+  ~ProtocolStream();
+
+  uint8_t ParsingMessage(uint8_t *msg, uint8_t len);
+
+  void send_battery_info(BatteryStatus &battery);
+  void send_frequency_info(uint8_t channel, WavePara &wave);
+  void send_channel_enable_info(bool channelEnable[3]);
+};
 #endif /* MESSAGE_H_ */

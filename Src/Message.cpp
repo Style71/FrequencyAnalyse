@@ -165,43 +165,12 @@ void SampleRoutine2(char *pcString)
 	}
 }
 
-enum MessageParsingState
-{
-	NoMessage = 0,
-	MessageIncoming = 1,
-	ReceivingPayload = 2,
-	Checksum = 3,
-	NewMessage = 4,
-};
-
-class ProtocolStream
-{
-private:
-	MessageParsingState sMessageFlags;
-	uint8_t pucPayload[MAX_PAYLOAD_SIZE];
-	uint8_t ucMsgIndex;
-	uint8_t ucPacketHead;
-
-	void recv_frequency(uint8_t channel, uint8_t *payload);
-	void recv_battery(uint8_t *payload);
-	void recv_channel_enable(uint8_t channel, uint8_t *payload);
-
-	uint8_t calculateChecksum(uint8_t *msg, uint32_t len);
-	void send_packet(uint8_t head, uint8_t *payload, uint32_t payload_len);
-
-public:
-	ProtocolStream(/* args */);
-	~ProtocolStream();
-
-	uint8_t ParsingMessage(uint8_t *msg, uint8_t len);
-
-	void send_battery_info(BatteryStatus &battery);
-	void send_frequency_info(uint8_t channel, WavePara &wave);
-	void send_battery_info(BatteryStatus &battery);
-	void send_channel_enable_info(bool channelEnable[3]);
-};
-
-ProtocolStream::ProtocolStream(/* args */)
+ProtocolStream::ProtocolStream(recv_channel_enable_info_callback &func_channel_enable,
+							   recv_battery_info_callback &func_battery,
+							   recv_frequency_info_callback &func_frequency)
+	: channel_enable_callback(func_channel_enable),
+	  battery_callback(func_battery),
+	  frequency_callback(func_frequency)
 {
 	sMessageFlags = NoMessage;
 }
@@ -290,18 +259,40 @@ void ProtocolStream::send_channel_enable_info(bool channelEnable[3])
 		payload[i] = channelEnable[i] ? 1 : 0;
 	send_packet(head, payload, 3);
 }
+void ProtocolStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t len)
+{
+	switch (ucPacketHead)
+	{
+	case 0x51:
+	case 0x52:
+	case 0x53:
+
+		break;
+	case 0x59:
+
+		break;
+	case 0x5F:
+
+		break;
+	default:
+		break;
+	}
+}
 
 uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 {
 	uint8_t ret = 0x00;
+	bool isReparsing = false;
+	uint8_t reparsingHead;
 
 	uint8_t i = 0;
+	uint8_t byte = msg[0];
 	while (i < len)
 	{
 		switch (sMessageFlags)
 		{
 		case NoMessage: // While the state machine is in idle state.
-			if (msg[i] == 0x5A)
+			if (byte == 0x5A)
 			{
 				// Get a possible packet head, change to incoming state.
 				sMessageFlags = MessageIncoming;
@@ -309,7 +300,13 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 			// Discard the character if it is not '0x5A'.
 			break;
 		case MessageIncoming: // While the state machine is in incoming state.
-			switch (msg[i])
+			if (!isReparsing)
+			{
+				ucBufferIndex = 0;
+				reparsingHead = 0;
+				pucReparsingBuffer[ucBufferIndex++] = byte;
+			}
+			switch (byte)
 			{
 			case 0x51:
 			case 0x52:
@@ -319,54 +316,52 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 				// Get a packet head, change to new state and record the payload.
 				sMessageFlags = ReceivingPayload;
 				// Reset the packet message index.
-				ucMsgIndex = 0;
+				ucPayloadIndex = 0;
 				// Store the packet head.
-				ucPacketHead = msg[i];
+				ucPacketHead = byte;
+
 				break;
 			default:
 				// Reset to idle state.
 				sMessageFlags = NoMessage;
+				// If we fail to parse the packet, repase the input string from the buffer.
+				isReparsing = true;
 				break;
 			}
 		case ReceivingPayload: // While the state machine is in payload receiving state.
-			pucPayload[ucMsgIndex++] = msg[i];
+			if (!isReparsing)
+				pucReparsingBuffer[ucBufferIndex++] = byte;
+
+			pucPayload[ucPayloadIndex++] = byte;
 			if ((ucPacketHead == 0x51) || (ucPacketHead == 0x52) || (ucPacketHead == 0x53))
 			{
-				if (ucMsgIndex == 16)
+				if (ucPayloadIndex == 16)
 					sMessageFlags = Checksum; // Set to checksum state.
 			}
 			if (ucPacketHead == 0x59)
 			{
-				if (ucMsgIndex == 9)
+				if (ucPayloadIndex == 9)
 					sMessageFlags = Checksum; // Set to checksum state.
 			}
 			if (ucPacketHead == 0x5F)
 			{
-				if (ucMsgIndex == 3)
+				if (ucPayloadIndex == 3)
 					sMessageFlags = Checksum; // Set to checksum state.
 			}
 			break;
 		case Checksum: // While the state machine is in checksum state.
-			if (calculateChecksum(pucPayload, ucMsgIndex) == msg[i])
+			if (calculateChecksum(pucPayload, ucPayloadIndex) == byte)
 			{
-				switch (ucPacketHead)
-				{
-				case 0x51:
-				case 0x52:
-				case 0x53:
-
-					break;
-				case 0x59:
-
-					break;
-				case 0x5F:
-
-					break;
-				default:
-					break;
-				}
+				recv_packet(ucPacketHead, pucPayload, ucPayloadIndex);
 				ret = ucPacketHead;
 			}
+			else
+			{
+				if (isReparsing)
+			}
+			// In both case, reset to idle state.
+			sMessageFlags = NoMessage;
+			ucPayloadIndex = 0;
 			break;
 		default:
 			break;
