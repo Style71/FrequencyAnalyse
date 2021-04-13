@@ -1,16 +1,10 @@
-/*
- * Message.h
- *
- *  Created on: Mar 22, 2015
- *      Author: QiYang
- */
 /**
   ******************************************************************************
   * File Name          : Message.h
   * Description        : This file contains all the functions prototypes for 
-  *                      the UASRT message dispatch.  
+  *                      the UASRT message parsing and dispatch.  
 	* Author						 : Qi Yang
-	* Date							 : Oct, 31, 2020
+	* Date							 : Apr 13, 2021
   ******************************************************************************
   */
 #ifndef MESSAGE_H_
@@ -19,9 +13,11 @@
 //#include <stdint.h>
 //#include <ctype.h>
 //#include <stdbool.h>
-//#include <string.h>
+//#include <string.h>S
 //#include <stdio.h>
 //#include <stdlib.h>
+#include "DataStructure.h"
+#include "DSP.h"
 
 #define NEW_MESSAGE 0x01
 #define NO_MESSAGE 0x02
@@ -30,7 +26,8 @@
 #define MESSAGE_SIZE 64
 
 //This macro defines the maximum protocol payload size.
-#define MAX_PAYLOAD_SIZE 16
+#define MAX_MSG_PAYLOAD_SIZE 64
+#define MAX_PACKET_PAYLOAD_SIZE 16
 
 //*****************************************************************************
 //This function fetch the chars remain in RX FIFO, and dispatch the message to corresponding
@@ -39,48 +36,48 @@
 //**********************************************************
 void UpdateMessage(void);
 
-//*****************************************************************************
-// This function dispatch the message to corresponding message service routines. It is called by
-// UpdataMessage(), and it should not be called by yourself.
-//**********************************************************
-bool DispatchMessage(char *msg);
-
-//*****************************************************************************
-// The default message service routine. This function is called when the message address does not match
-// any service routine number.
-//**********************************************************
-void DefaultRoutine(char *pcString);
-
-//*****************************************************************************
-// The No.1 message service routine. This function is called when the message address matches @01.
-//**********************************************************
-void SampleRoutine1(char *pcString);
-
-//*****************************************************************************
-// The No.2 message service routine. This function is called when the message address matches @02.
-//**********************************************************
-void SampleRoutine2(char *pcString);
-
-enum MessageParsingState
+enum ParsingState
 {
   NoMessage = 0,
   MessageIncoming = 1,
-  ReceivingPayload = 2,
-  Checksum = 3,
-  NewMessage = 4,
+  DecodeHead = 2,
+  ReceivingColon = 3,
+  ReceivingPayload = 4,
+  Checksum = 5,
+};
+
+class MessageStream
+{
+private:
+  ParsingState sMessageFlags;
+  uint8_t pucPayload[MAX_MSG_PAYLOAD_SIZE];
+  uint8_t ucPayloadIndex;
+  class Queue<unsigned char, MESSAGE_BUFFER_SIZE> cReparsingBuffer;
+  uint8_t ucBufferIndex;
+
+  uint8_t ucPacketHead;
+
+  void recv_packet(uint8_t head, uint8_t *payload, uint32_t payload_len);
+
+public:
+  MessageStream();
+  ~MessageStream();
+
+  uint8_t ParsingMessage(uint8_t *msg, uint8_t len);
 };
 
 typedef void(recv_frequency_info_callback)(uint8_t channel, WavePara &wave);
 typedef void(recv_battery_info_callback)(BatteryStatus &battery);
 typedef void(recv_channel_enable_info_callback)(bool channelEnable[3]);
+typedef void(put_chars_callback)(const char *pucArray, int size);
 
 class ProtocolStream
 {
 private:
-  MessageParsingState sMessageFlags;
-  uint8_t pucPayload[MAX_PAYLOAD_SIZE];
+  ParsingState sMessageFlags;
+  uint8_t pucPayload[MAX_PACKET_PAYLOAD_SIZE];
   uint8_t ucPayloadIndex;
-  uint8_t pucReparsingBuffer[MAX_PAYLOAD_SIZE];
+  Queue<unsigned char, PACKET_BUFFER_SIZE> cReparsingBuffer;
   uint8_t ucBufferIndex;
 
   uint8_t ucPacketHead;
@@ -88,13 +85,14 @@ private:
   recv_channel_enable_info_callback *channel_enable_callback;
   recv_battery_info_callback *battery_callback;
   recv_frequency_info_callback *frequency_callback;
+  put_chars_callback *putc_callback;
 
   uint8_t calculateChecksum(uint8_t *msg, uint32_t len);
   void send_packet(uint8_t head, uint8_t *payload, uint32_t payload_len);
   void recv_packet(uint8_t head, uint8_t *payload, uint32_t payload_len);
 
 public:
-  ProtocolStream(recv_channel_enable_info_callback &func_channel_enable, recv_battery_info_callback &func_battery, recv_frequency_info_callback &func_frequency);
+  ProtocolStream(put_chars_callback &func_put_chars, recv_channel_enable_info_callback &func_channel_enable, recv_battery_info_callback &func_battery, recv_frequency_info_callback &func_frequency);
   ~ProtocolStream();
 
   uint8_t ParsingMessage(uint8_t *msg, uint8_t len);

@@ -1,130 +1,54 @@
-/*
- * Message.c
- *
- *  Created on: Mar 22, 2015
- *      Author: QiYang
- */
+/**
+  ******************************************************************************
+  * File Name          : Message.h
+  * Description        : This file contains all the functions prototypes for 
+  *                      the UASRT message parsing and dispatch.  
+	* Author						 : Qi Yang
+	* Date							 : Apr 13, 2021
+  ******************************************************************************
+  */
 #include "Message.h"
 #include "usart.h"
-#include "DataStructure.h"
-#include "DSP.h"
 #include <cctype>
 #include <cstring>
 
-static unsigned char sucMessage_Flags[2] = {NO_MESSAGE, NO_MESSAGE};
-
-static char scRXMessage[2][MESSAGE_SIZE];
 extern Queue<unsigned char, 1024> USART1_RX_Stream;
 extern Queue<unsigned char, 1024> USART2_RX_Stream;
+
 extern bool channelEnable[3];
 extern PrintState stage;
 extern int oneshoot_count;
+
 extern FreqWave signal_400Hz_freq;
 extern FreqWave signal_100Hz_freq;
 extern FreqWave signal_35Hz_freq;
 
+MessageStream USBStream;
+
 void UpdateMessage()
 {
-	char cChar;
-	static int sIndex = 0;
-	Queue<unsigned char, 1024> *RXStream;
-
-	for (int k = 0; k < 2; k++)
+	uint8_t byte;
+	while (USART1_RX_Stream.size() > 0)
 	{
-		switch (k)
-		{
-		case 0:
-			RXStream = &USART1_RX_Stream;
-			break;
-		case 1:
-			RXStream = &USART2_RX_Stream;
-			break;
-		default:
-			break;
-		}
-		//If the state machine is in idle state.
-		if (sucMessage_Flags[k] == NO_MESSAGE)
-		{
-			while ((RXStream->size() > 0) && (sucMessage_Flags[k] == NO_MESSAGE))
-			{
-				//Get a character in the receiving buffer
-				cChar = RXStream->pop_front();
-
-				if (cChar == '@')
-				{
-					//Get a new message, change to busy state.
-					sucMessage_Flags[k] = NEW_MESSAGE;
-					//Reset the index.
-					sIndex = 0;
-				}
-				//Discard the character if it is not an '@' symbol.
-			}
-		}
-
-		while ((RXStream->size() > 0) && (sucMessage_Flags[k] == NEW_MESSAGE)) //While there are still characters in the buffer, and the state machine is in busy state.
-		{
-			cChar = RXStream->pop_front();
-			//See if the message is end with '!' or the receiving buffer is full and we still don't get a '!'.
-			if ((cChar == '!') || (sIndex > (MESSAGE_SIZE - 2)))
-			{
-				//Add a terminator '\0' to the end of the string and dispatch the message.
-				scRXMessage[k][sIndex] = '\0';
-				DispatchMessage(scRXMessage[k]);
-				//Change to idle state.
-				sucMessage_Flags[k] = NO_MESSAGE;
-			}
-			else //Else, copy the data to message buffer.
-				scRXMessage[k][sIndex++] = cChar;
-		}
+		byte = USART1_RX_Stream.pop_front();
+		USBStream.ParsingMessage(&byte, 1);
 	}
 }
 
-bool DispatchMessage(char *msg)
-{
-	int sAddress;
-
-	//Get the address.
-	if ((isdigit(msg[0])) && (isdigit(msg[1])))
-	{
-		sAddress = msg[0] - '0';
-		sAddress *= 10;
-		sAddress += msg[1] - '0';
-	}
-	else
-	{
-		//The message is illegal, discard the message.
-		//Return false.
-		return false;
-	}
-
-	if (msg[2] != ':')
-	{
-		//The message is illegal, discard the message.
-		//Return false.
-		return false;
-	}
-	//Jump to corresponding message handle routine.
-	switch (sAddress)
-	{
-	case 1:
-		SampleRoutine1(msg + 3);
-		break;
-	case 2:
-		SampleRoutine2(msg + 3);
-		break;
-	default:
-		DefaultRoutine(msg + 3);
-	}
-	return true;
-}
-
-void DefaultRoutine(char *pcString)
+//*****************************************************************************
+// The default message service routine. This function is called when the message address does not match
+// any service routine number.
+//**********************************************************
+void DefaultRoutine(uint8_t *pcString)
 {
 	USART_Printf(&huart1, "Default channel: %s\n", pcString);
 	USART_Printf(&huart2, "Default channel: %s\n", pcString);
 }
 
-void SampleRoutine1(char *pcString)
+//*****************************************************************************
+// The No.1 message service routine. This function is called when the message address matches @01.
+//**********************************************************
+void SampleRoutine1(uint8_t *pcString)
 {
 	unsigned int enable[3];
 	sscanf(pcString, "%u %u %u", &enable[0], &enable[1], &enable[2]);
@@ -154,7 +78,10 @@ void SampleRoutine1(char *pcString)
 	USART_Putc(&huart2, '\n');
 }
 
-void SampleRoutine2(char *pcString)
+//*****************************************************************************
+// The No.2 message service routine. This function is called when the message address matches @02.
+//**********************************************************
+void SampleRoutine2(uint8_t *pcString)
 {
 	if ((strcmp(pcString, "oneshoot") == 0) || (strcmp(pcString, "Oneshoot") == 0) || (strcmp(pcString, "ONESHOOT") == 0))
 	{
@@ -165,14 +92,135 @@ void SampleRoutine2(char *pcString)
 	}
 }
 
-ProtocolStream::ProtocolStream(recv_channel_enable_info_callback &func_channel_enable,
+MessageStream::MessageStream()
+{
+	ucBufferIndex = 0;
+}
+MessageStream::~MessageStream()
+{
+}
+
+uint8_t MessageStream::ParsingMessage(uint8_t *msg, uint8_t len)
+{
+	uint8_t ret = 0x00;
+	uint8_t byte;
+
+	int i = 0;
+	while (i < len)
+	{
+		if (ucBufferIndex == cReparsingBuffer.size())
+			cReparsingBuffer.push_back(msg[i++]);
+
+		byte = cReparsingBuffer[ucBufferIndex++];
+		switch (sMessageFlags)
+		{
+		case NoMessage: // While the state machine is in idle state.
+			if (byte == '@')
+			{
+				// Get a possible packet head, change to incoming state.
+				sMessageFlags = MessageIncoming;
+			}
+			else // Discard the character if it is not '@'.
+			{
+				ucBufferIndex = 0;
+				cReparsingBuffer.pop_front(1);
+			}
+			break;
+		case MessageIncoming:  // While the state machine is in incoming state.
+			if (isdigit(byte)) //Get the address.
+			{
+				ucPacketHead = byte - '0';
+				ucPacketHead *= 10;
+				sMessageFlags = DecodeHead;
+			}
+			else
+			{
+				//The message is illegal, discard the message and reset to idle state.
+				sMessageFlags = NoMessage;
+				ucBufferIndex = 0;
+				cReparsingBuffer.pop_front(2);
+			}
+			break;
+		case DecodeHead:
+			if (isdigit(byte)) //Get the address.
+			{
+				ucPacketHead += byte - '0';
+				// Get a packet head, change to new state.
+				sMessageFlags = ReceivingColon;
+			}
+			else
+			{
+				//The message is illegal, discard the message and reset to idle state.
+				sMessageFlags = NoMessage;
+				ucBufferIndex = 0;
+				cReparsingBuffer.pop_front(3);
+			}
+			break;
+		case ReceivingColon:
+			if (byte == ':') //Get the address.
+			{
+				// Get colon, change to new state and receiving payload.
+				sMessageFlags = ReceivingPayload;
+				// Reset the packet message index.
+				ucPayloadIndex = 0;
+			}
+			else
+			{
+				//The message is illegal, discard the message and reset to idle state.
+				sMessageFlags = NoMessage;
+				ucBufferIndex = 0;
+				cReparsingBuffer.pop_front(4);
+			}
+			break;
+		case ReceivingPayload: // While the state machine is in payload receiving state.
+			pucPayload[ucPayloadIndex++] = byte;
+			if ((byte == '!') || (ucPayloadIndex >= MAX_PACKET_PAYLOAD_SIZE))
+			{
+				//Add a terminator '\0' to the end of the string and dispatch the message.
+				pucPayload[--ucPayloadIndex] = '\0';
+				recv_packet(ucPacketHead, pucPayload, ucPayloadIndex);
+				cReparsingBuffer.pop_front(ucBufferIndex);
+				ucBufferIndex = 0;
+				sMessageFlags = NoMessage;
+				ret = ucPacketHead;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+//*****************************************************************************
+// This function dispatch the message to corresponding message service routines.
+//**********************************************************
+void MessageStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t payload_len)
+{
+	//Jump to corresponding message handle routine.
+	switch (head)
+	{
+	case 1:
+		SampleRoutine1(payload);
+		break;
+	case 2:
+		SampleRoutine2(payload);
+		break;
+	default:
+		DefaultRoutine(payload);
+	}
+}
+
+ProtocolStream::ProtocolStream(put_chars_callback &func_put_chars,
+							   recv_channel_enable_info_callback &func_channel_enable,
 							   recv_battery_info_callback &func_battery,
 							   recv_frequency_info_callback &func_frequency)
-	: channel_enable_callback(func_channel_enable),
+	: putc_callback(func_put_chars),
+	  channel_enable_callback(func_channel_enable),
 	  battery_callback(func_battery),
 	  frequency_callback(func_frequency)
 {
 	sMessageFlags = NoMessage;
+	ucBufferIndex = 0;
 }
 
 ProtocolStream::~ProtocolStream()
@@ -199,7 +247,8 @@ void ProtocolStream::send_packet(uint8_t head, uint8_t *payload, uint32_t payloa
 	memcpy(&msg[2], payload, payload_len);
 	msg[2 + payload_len] = calculateChecksum(msg, payload_len + 2);
 
-	USART_Putchars(&huart1, (const char *)msg, payload_len + 3);
+	putc_callback((const char *)msg, payload_len + 3);
+	//USART_Putchars(&huart1, (const char *)msg, payload_len + 3);
 }
 
 void ProtocolStream::send_frequency_info(uint8_t channel, WavePara &wave)
@@ -259,20 +308,37 @@ void ProtocolStream::send_channel_enable_info(bool channelEnable[3])
 		payload[i] = channelEnable[i] ? 1 : 0;
 	send_packet(head, payload, 3);
 }
+
 void ProtocolStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t len)
 {
-	switch (ucPacketHead)
+	WavePara freq;
+	BatteryStatus Batt;
+	bool channelEnableBytes[3];
+
+	switch (head)
 	{
 	case 0x51:
 	case 0x52:
 	case 0x53:
+		memcpy(&freq.t, &payload[0], 4);
+		memcpy(&freq.freq, &payload[4], 4);
+		memcpy(&freq.mag, &payload[8], 4);
 
+		frequency_callback(head & 0x0F, freq);
 		break;
 	case 0x59:
+		memcpy(&Batt.t, &payload[0], 4);
+		memcpy(&Batt.voltage, &payload[4], 2);
+		memcpy(&Batt.current, &payload[6], 2);
+		Batt.capacity = payload[8];
 
+		battery_callback(Batt);
 		break;
 	case 0x5F:
+		for (int i = 0; i < 3; i++)
+			channelEnableBytes[i] = (payload[i]) ? true : false;
 
+		channel_enable_callback(channelEnableBytes);
 		break;
 	default:
 		break;
@@ -282,13 +348,15 @@ void ProtocolStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t len)
 uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 {
 	uint8_t ret = 0x00;
-	bool isReparsing = false;
-	uint8_t reparsingHead;
+	uint8_t byte;
 
-	uint8_t i = 0;
-	uint8_t byte = msg[0];
+	int i = 0;
 	while (i < len)
 	{
+		if (ucBufferIndex == cReparsingBuffer.size())
+			cReparsingBuffer.push_back(msg[i++]);
+
+		byte = cReparsingBuffer[ucBufferIndex++];
 		switch (sMessageFlags)
 		{
 		case NoMessage: // While the state machine is in idle state.
@@ -297,15 +365,13 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 				// Get a possible packet head, change to incoming state.
 				sMessageFlags = MessageIncoming;
 			}
-			// Discard the character if it is not '0x5A'.
-			break;
-		case MessageIncoming: // While the state machine is in incoming state.
-			if (!isReparsing)
+			else // Discard the character if it is not '0x5A'.
 			{
 				ucBufferIndex = 0;
-				reparsingHead = 0;
-				pucReparsingBuffer[ucBufferIndex++] = byte;
+				cReparsingBuffer.pop_front(1);
 			}
+			break;
+		case MessageIncoming: // While the state machine is in incoming state.
 			switch (byte)
 			{
 			case 0x51:
@@ -324,14 +390,12 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 			default:
 				// Reset to idle state.
 				sMessageFlags = NoMessage;
-				// If we fail to parse the packet, repase the input string from the buffer.
-				isReparsing = true;
+				// If we fail to parse the packet, discard the first byte and repase the input string from the buffer.
+				ucBufferIndex = 0;
+				cReparsingBuffer.pop_front(1);
 				break;
 			}
 		case ReceivingPayload: // While the state machine is in payload receiving state.
-			if (!isReparsing)
-				pucReparsingBuffer[ucBufferIndex++] = byte;
-
 			pucPayload[ucPayloadIndex++] = byte;
 			if ((ucPacketHead == 0x51) || (ucPacketHead == 0x52) || (ucPacketHead == 0x53))
 			{
@@ -353,56 +417,21 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 			if (calculateChecksum(pucPayload, ucPayloadIndex) == byte)
 			{
 				recv_packet(ucPacketHead, pucPayload, ucPayloadIndex);
+				cReparsingBuffer.pop_front(ucBufferIndex);
 				ret = ucPacketHead;
 			}
 			else
 			{
-				if (isReparsing)
+				cReparsingBuffer.pop_front(1);
 			}
 			// In both case, reset to idle state.
 			sMessageFlags = NoMessage;
-			ucPayloadIndex = 0;
+			ucBufferIndex = 0;
 			break;
 		default:
 			break;
 		}
-		i++;
 	}
 
 	return ret;
-}
-
-uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
-{
-	bool isReparsing = false;
-	uint8_t byte;
-
-	int i = 0;
-	while (i < len)
-	{
-		if (!isReparsing)
-		{
-			byte = msg[i++];
-			enqueue(byte);
-		}
-		else
-		{
-			byte = enqueue[ucBufferIndex++];
-		}
-		// Process byte
-		{
-			if (getPacket)
-				dequeue(PacketLen);
-			else
-			{
-				sMessageFlags = NoMessage;
-				ucBufferIndex = 0;
-				dequeue one byte;
-			}
-		}
-		if ((sMessageFlags == NoMessage) && (queue.len > 0))
-		{
-			isReparsing = true;
-		}
-	}
 }

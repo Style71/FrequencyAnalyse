@@ -164,5 +164,7 @@ bool Queue<T, Queue_Size>::set_length(int num)
 	}
 }
 
+template class Queue<unsigned char, PACKET_BUFFER_SIZE>;
+template class Queue<unsigned char, MESSAGE_BUFFER_SIZE>;
 template class Queue<unsigned char, USART_TXRX_BUFFER_SIZE>;
 template class Queue<WavePara, FREQWAVE_BUFFER_SIZE>;
