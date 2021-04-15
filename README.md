@@ -36,7 +36,7 @@ Analysing three frequency components in an anolog signal and transmitting to hos
   
   ```json
   "intelliSenseMode": "linux-gcc-arm",
-"compilerPath": "/opt/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-g++",
+  "compilerPath": "/opt/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-g++",
   ```
 
   If you are not sure where your arm gcc compiler is, you can type the following command to find the path:
