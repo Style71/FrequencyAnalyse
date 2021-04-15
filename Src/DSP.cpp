@@ -4,6 +4,7 @@
 #include "adc.h"
 #include "usart.h"
 #include "SysTime.h"
+#include "Message.h"
 
 #define MAX_SAMPLE_POINTS 4096
 #define STAGE_NUM 6
@@ -73,6 +74,8 @@ BatteryStatus BattStatus;
 static double BattEstTotalCapacity = 450; // Battery estimated capacity in mAh.
 
 static bool isInRun = false;
+
+extern ProtocolStream BLEStream;
 
 void calculate_max_amp_freq(FreqWave *pFreqwave)
 {
@@ -195,7 +198,8 @@ void PrintLoop()
       para = signal_400Hz_freq.freq.pop_front();
       if (channelEnable[0])
       {
-        USART_Printf(&huart2, "f1 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
+        BLEStream.send_frequency_info(1, para);
+        //USART_Printf(&huart2, "f1 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
         //USART_Printf(&huart1, "f1 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
       }
     }
@@ -204,7 +208,8 @@ void PrintLoop()
       para = signal_100Hz_freq.freq.pop_front();
       if (channelEnable[1])
       {
-        USART_Printf(&huart2, "f2 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
+        BLEStream.send_frequency_info(2, para);
+        //USART_Printf(&huart2, "f2 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
         //USART_Printf(&huart1, "f2 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
       }
     }
@@ -213,7 +218,8 @@ void PrintLoop()
       para = signal_35Hz_freq.freq.pop_front();
       if (channelEnable[2])
       {
-        USART_Printf(&huart2, "f3 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
+        BLEStream.send_frequency_info(3, para);
+        //USART_Printf(&huart2, "f3 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
         //USART_Printf(&huart1, "f3 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
       }
     }

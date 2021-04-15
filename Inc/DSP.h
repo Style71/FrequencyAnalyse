@@ -34,10 +34,10 @@ typedef struct
 
 typedef struct _BattStatus
 {
-    uint32_t t;
-    uint16_t voltage;
-    uint16_t current;
-    double capacity;
+    uint32_t t;       // System time in us.
+    uint16_t voltage; // Battery voltage in mV.
+    uint16_t current; // System current in mA.
+    double capacity;  // Battery capacity in percentage.
     _BattStatus()
     {
         t = 0;

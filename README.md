@@ -30,15 +30,17 @@ Analysing three frequency components in an anolog signal and transmitting to hos
   	rm -rf $(BUILD_DIR)/*.d $(BUILD_DIR)/*.o $(BUILD_DIR)/*.lst
   ```
 
-  Make changes to `.vscode/c_cpp_properties.json` file, change "intelliSenseMode" and "compilerPath" parameter to approprate value:
+  If you installed **openocd** using `apt-get` command, then the **openocd** configuration file is located in `/usr/share/openocd/scripts` by default.
 
+  Make changes to `.vscode/c_cpp_properties.json` file, change "intelliSenseMode" and "compilerPath" parameter to approprate value:
+  
   ```json
   "intelliSenseMode": "linux-gcc-arm",
-  "compilerPath": "/opt/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-g++",
+"compilerPath": "/opt/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-g++",
   ```
 
   If you are not sure where your arm gcc compiler is, you can type the following command to find the path:
-
+  
   ```
   whereis arm-none-eabi-g++
   ```

@@ -12,6 +12,7 @@
 #include <cctype>
 #include <cstring>
 
+// Extern objects declaration.
 extern Queue<unsigned char, 1024> USART1_RX_Stream;
 extern Queue<unsigned char, 1024> USART2_RX_Stream;
 
@@ -23,15 +24,36 @@ extern FreqWave signal_400Hz_freq;
 extern FreqWave signal_100Hz_freq;
 extern FreqWave signal_35Hz_freq;
 
+// Function declaration.
+void putchars(const char *pucArray, int size);
+void recv_frequency_info(uint8_t channel, WavePara &wave);
+void recv_battery_info(BatteryStatus &battery);
+void recv_channel_enable_info(bool channelEnable[3]);
+
+// Class objects declaration.
 MessageStream USBStream;
+ProtocolStream BLEStream(putchars, recv_channel_enable_info, recv_battery_info, recv_frequency_info);
+ProtocolStream LoopbackStream(putchars, recv_channel_enable_info, recv_battery_info, recv_frequency_info);
+
+Queue<unsigned char, 1024> USART1_Loopback_Stream;
 
 void UpdateMessage()
 {
 	uint8_t byte;
+	while (USART2_RX_Stream.size() > 0)
+	{
+		byte = USART2_RX_Stream.pop_front();
+		USBStream.ParsingMessage(&byte, 1);
+	}
 	while (USART1_RX_Stream.size() > 0)
 	{
 		byte = USART1_RX_Stream.pop_front();
-		USBStream.ParsingMessage(&byte, 1);
+		BLEStream.ParsingMessage(&byte, 1);
+	}
+	while (USART1_Loopback_Stream.size() > 0)
+	{
+		byte = USART1_Loopback_Stream.pop_front();
+		LoopbackStream.ParsingMessage(&byte, 1);
 	}
 }
 
@@ -41,7 +63,6 @@ void UpdateMessage()
 //**********************************************************
 void DefaultRoutine(uint8_t *pcString)
 {
-	USART_Printf(&huart1, "Default channel: %s\n", pcString);
 	USART_Printf(&huart2, "Default channel: %s\n", pcString);
 }
 
@@ -67,14 +88,11 @@ void SampleRoutine1(uint8_t *pcString)
 	else
 		channelEnable[2] = true;
 
-	USART_Putc(&huart1, '\n');
 	USART_Putc(&huart2, '\n');
 	for (int i = 0; i < 3; i++)
 	{
-		USART_Printf(&huart1, "Channel%i: %s \t", i, (channelEnable[i]) ? "Enabled" : "Disabled");
 		USART_Printf(&huart2, "Channel%i: %s \t", i, (channelEnable[i]) ? "Enabled" : "Disabled");
 	}
-	USART_Putc(&huart1, '\n');
 	USART_Putc(&huart2, '\n');
 }
 
@@ -87,7 +105,6 @@ void SampleRoutine2(uint8_t *pcString)
 	{
 		oneshoot_count = 0;
 		stage = WaitSample;
-		USART_Puts(&huart1, "\nData recording......\n");
 		USART_Puts(&huart2, "\nData recording......\n");
 	}
 }
@@ -189,6 +206,8 @@ uint8_t MessageStream::ParsingMessage(uint8_t *msg, uint8_t len)
 			break;
 		}
 	}
+
+	return ret;
 }
 
 //*****************************************************************************
@@ -432,6 +451,57 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 			break;
 		}
 	}
-
 	return ret;
+}
+
+void putchars(const char *pucArray, int size)
+{
+	// Sending packet via bluetooth.
+	USART_Putchars(&huart1, pucArray, size);
+	// Loopback to USB-UART input stream.
+	for (int i = 0; i < size; i++)
+		USART1_Loopback_Stream.push_back(pucArray[i]);
+}
+
+void recv_frequency_info(uint8_t channel, WavePara &wave)
+{
+	FreqWave *pWave;
+	switch (channel)
+	{
+	case 1:
+		pWave = &signal_400Hz_freq;
+		break;
+	case 2:
+		pWave = &signal_100Hz_freq;
+		break;
+	case 3:
+		pWave = &signal_35Hz_freq;
+		break;
+	default:
+		break;
+	}
+	USART_Printf(&huart2, "f1 = (%u.%03ms, %.2f+-%.2fHz, %.2fmV)\r\n", wave.t / 1000000, wave.t / 1000, wave.freq, 1.0 / pWave->deltaT, wave.mag * 1000);
+}
+
+void recv_battery_info(BatteryStatus &battery)
+{
+	USART_Printf(&huart2, "Time: %u.%03ms, voltage: %humV, current: %humA, capacity: %.2lf/%)\r\n", battery.t / 1000000, battery.t / 1000, battery.voltage / 1000, battery.current, battery.capacity);
+}
+
+void recv_channel_enable_info(bool enable[3])
+{
+	for (int i = 0; i < 3; i++)
+	{
+		if (enable[i] == 0)
+			channelEnable[i] = false;
+		else
+			channelEnable[i] = true;
+	}
+
+	USART_Putc(&huart2, '\n');
+	for (int i = 0; i < 3; i++)
+	{
+		USART_Printf(&huart2, "Channel%i: %s \t", i, (channelEnable[i]) ? "Enabled" : "Disabled");
+	}
+	USART_Putc(&huart2, '\n');
 }

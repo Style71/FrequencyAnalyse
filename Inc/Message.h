@@ -101,4 +101,6 @@ public:
   void send_frequency_info(uint8_t channel, WavePara &wave);
   void send_channel_enable_info(bool channelEnable[3]);
 };
+
+extern ProtocolStream BLEStream;
 #endif /* MESSAGE_H_ */
