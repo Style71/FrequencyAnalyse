@@ -12,8 +12,8 @@
 #include "main.h"
 
 #define USART_TXRX_BUFFER_SIZE 1024
-#define PACKET_BUFFER_SIZE 16
-#define MESSAGE_BUFFER_SIZE 64
+#define PACKET_BUFFER_SIZE 20  // This macro should be slightly greater than MAX_PACKET_PAYLOAD_SIZE
+#define MESSAGE_BUFFER_SIZE 80 // This macro should be slightly greater than MAX_MSG_PAYLOAD_SIZE
 #define FREQWAVE_BUFFER_SIZE 16
 template <class T, unsigned int Queue_Size>
 class Queue

@@ -61,7 +61,7 @@ void UpdateMessage()
 // The default message service routine. This function is called when the message address does not match
 // any service routine number.
 //**********************************************************
-void DefaultRoutine(uint8_t *pcString)
+void DefaultRoutine(const char *pcString)
 {
 	USART_Printf(&huart2, "Default channel: %s\n", pcString);
 }
@@ -69,11 +69,21 @@ void DefaultRoutine(uint8_t *pcString)
 //*****************************************************************************
 // The No.1 message service routine. This function is called when the message address matches @01.
 //**********************************************************
-void SampleRoutine1(uint8_t *pcString)
+void SampleRoutine1(const char *pcString)
 {
 	unsigned int enable[3];
+	bool logicEnable[3];
 	sscanf(pcString, "%u %u %u", &enable[0], &enable[1], &enable[2]);
-	if (enable[0] == 0)
+	for (int i = 0; i < 3; i++)
+	{
+		if (enable[i] == 0)
+			logicEnable[i] = false;
+		else
+			logicEnable[i] = true;
+	}
+	BLEStream.send_channel_enable_info(logicEnable);
+
+	/* 	if (enable[0] == 0)
 		channelEnable[0] = false;
 	else
 		channelEnable[0] = true;
@@ -93,13 +103,13 @@ void SampleRoutine1(uint8_t *pcString)
 	{
 		USART_Printf(&huart2, "Channel%i: %s \t", i, (channelEnable[i]) ? "Enabled" : "Disabled");
 	}
-	USART_Putc(&huart2, '\n');
+	USART_Putc(&huart2, '\n'); */
 }
 
 //*****************************************************************************
 // The No.2 message service routine. This function is called when the message address matches @02.
 //**********************************************************
-void SampleRoutine2(uint8_t *pcString)
+void SampleRoutine2(const char *pcString)
 {
 	if ((strcmp(pcString, "oneshoot") == 0) || (strcmp(pcString, "Oneshoot") == 0) || (strcmp(pcString, "ONESHOOT") == 0))
 	{
@@ -219,13 +229,13 @@ void MessageStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t payload
 	switch (head)
 	{
 	case 1:
-		SampleRoutine1(payload);
+		SampleRoutine1((const char *)payload);
 		break;
 	case 2:
-		SampleRoutine2(payload);
+		SampleRoutine2((const char *)payload);
 		break;
 	default:
-		DefaultRoutine(payload);
+		DefaultRoutine((const char *)payload);
 	}
 }
 
@@ -252,6 +262,16 @@ uint8_t ProtocolStream::calculateChecksum(uint8_t *msg, uint32_t len)
 
 	for (uint32_t i = 1; i < len; i++)
 		checksum ^= msg[i]; // XOR of all bytes.
+
+	return checksum;
+}
+
+uint8_t ProtocolStream::calculateChecksum(Queue<unsigned char, PACKET_BUFFER_SIZE> &buffer, uint32_t len)
+{
+	uint8_t checksum = buffer[0];
+
+	for (uint32_t i = 1; i < len; i++)
+		checksum ^= buffer[i]; // XOR of all bytes.
 
 	return checksum;
 }
@@ -363,11 +383,21 @@ void ProtocolStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t len)
 		break;
 	}
 }
+void ProtocolStream::recv_packet(uint8_t head, Queue<unsigned char, PACKET_BUFFER_SIZE> &buffer, uint32_t payload_len)
+{
+	uint8_t payload[PACKET_BUFFER_SIZE];
+
+	for (int i = 0; i < payload_len; i++)
+		payload[i] = buffer[i + 2];
+
+	recv_packet(head, payload, payload_len);
+}
 
 uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 {
 	uint8_t ret = 0x00;
 	uint8_t byte;
+	uint8_t ucPayloadLen;
 
 	int i = 0;
 	while (i < len)
@@ -400,11 +430,6 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 			case 0x5F:
 				// Get a packet head, change to new state and record the payload.
 				sMessageFlags = ReceivingPayload;
-				// Reset the packet message index.
-				ucPayloadIndex = 0;
-				// Store the packet head.
-				ucPacketHead = byte;
-
 				break;
 			default:
 				// Reset to idle state.
@@ -414,28 +439,34 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 				cReparsingBuffer.pop_front(1);
 				break;
 			}
+			break;
 		case ReceivingPayload: // While the state machine is in payload receiving state.
-			pucPayload[ucPayloadIndex++] = byte;
+			// Get the packet message index.
+			ucPayloadLen = ucBufferIndex - 2;
+			// Get the packet head.
+			ucPacketHead = cReparsingBuffer[1];
 			if ((ucPacketHead == 0x51) || (ucPacketHead == 0x52) || (ucPacketHead == 0x53))
 			{
-				if (ucPayloadIndex == 16)
+				if (ucPayloadLen == 16)
 					sMessageFlags = Checksum; // Set to checksum state.
 			}
 			if (ucPacketHead == 0x59)
 			{
-				if (ucPayloadIndex == 9)
+				if (ucPayloadLen == 9)
 					sMessageFlags = Checksum; // Set to checksum state.
 			}
 			if (ucPacketHead == 0x5F)
 			{
-				if (ucPayloadIndex == 3)
+				if (ucPayloadLen == 3)
 					sMessageFlags = Checksum; // Set to checksum state.
 			}
 			break;
 		case Checksum: // While the state machine is in checksum state.
-			if (calculateChecksum(pucPayload, ucPayloadIndex) == byte)
+			// Get the packet message index.
+			ucPayloadLen = ucBufferIndex - 1;
+			if (calculateChecksum(cReparsingBuffer, ucPayloadLen) == byte)
 			{
-				recv_packet(ucPacketHead, pucPayload, ucPayloadIndex);
+				recv_packet(ucPacketHead, cReparsingBuffer, ucPayloadLen);
 				cReparsingBuffer.pop_front(ucBufferIndex);
 				ret = ucPacketHead;
 			}
@@ -480,12 +511,12 @@ void recv_frequency_info(uint8_t channel, WavePara &wave)
 	default:
 		break;
 	}
-	USART_Printf(&huart2, "f1 = (%u.%03ms, %.2f+-%.2fHz, %.2fmV)\r\n", wave.t / 1000000, wave.t / 1000, wave.freq, 1.0 / pWave->deltaT, wave.mag * 1000);
+	USART_Printf(&huart2, "f%hhu = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", channel, wave.t / 1000000, (wave.t / 1000) % 1000, wave.freq, 1.0 / pWave->deltaT, wave.mag * 1000);
 }
 
 void recv_battery_info(BatteryStatus &battery)
 {
-	USART_Printf(&huart2, "Time: %u.%03ms, voltage: %humV, current: %humA, capacity: %.2lf/%)\r\n", battery.t / 1000000, battery.t / 1000, battery.voltage / 1000, battery.current, battery.capacity);
+	USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf/%)\r\n", battery.t / 1000000, (battery.t / 1000) % 1000, battery.voltage / 1000, battery.current, battery.capacity);
 }
 
 void recv_channel_enable_info(bool enable[3])

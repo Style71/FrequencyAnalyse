@@ -13,7 +13,7 @@
 //#include <stdint.h>
 //#include <ctype.h>
 //#include <stdbool.h>
-//#include <string.h>S
+//#include <string.h>
 //#include <stdio.h>
 //#include <stdlib.h>
 #include "DataStructure.h"
@@ -75,8 +75,7 @@ class ProtocolStream
 {
 private:
   ParsingState sMessageFlags;
-  uint8_t pucPayload[MAX_PACKET_PAYLOAD_SIZE];
-  uint8_t ucPayloadIndex;
+
   Queue<unsigned char, PACKET_BUFFER_SIZE> cReparsingBuffer;
   uint8_t ucBufferIndex;
 
@@ -88,8 +87,10 @@ private:
   put_chars_callback *putc_callback;
 
   uint8_t calculateChecksum(uint8_t *msg, uint32_t len);
+  uint8_t calculateChecksum(Queue<unsigned char, PACKET_BUFFER_SIZE> &buffer, uint32_t len);
   void send_packet(uint8_t head, uint8_t *payload, uint32_t payload_len);
   void recv_packet(uint8_t head, uint8_t *payload, uint32_t payload_len);
+  void recv_packet(uint8_t head, Queue<unsigned char, PACKET_BUFFER_SIZE> &buffer, uint32_t payload_len);
 
 public:
   ProtocolStream(put_chars_callback &func_put_chars, recv_channel_enable_info_callback &func_channel_enable, recv_battery_info_callback &func_battery, recv_frequency_info_callback &func_frequency);
