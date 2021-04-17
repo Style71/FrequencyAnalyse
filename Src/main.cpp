@@ -110,8 +110,12 @@ int main(void)
   MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
-  const char Greetings[] = "Hello world!\n";
-  USART_Putchars(&huart2, Greetings, sizeof(Greetings));
+  USART_Puts(&huart2, "Hello world!\nFirmware version: V1.0, ");
+  USART_Puts(&huart2, "compile time: ");
+  USART_Puts(&huart2, __DATE__);
+  USART_Puts(&huart2, ", ");
+  USART_Puts(&huart2, __TIME__);
+  USART_Puts(&huart2, ".\n");
   //USART_Putchars(&huart1, Greetings, sizeof(Greetings));
 
   InitFilter();

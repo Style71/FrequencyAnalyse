@@ -69,6 +69,7 @@ float originalInput[ONESHOOT_SIZE];
 int oneshoot_count = ONESHOOT_SIZE;
 PrintState stage = Normal;
 bool channelEnable[3] = {true, true, true};
+bool virtualVal = true;
 
 BatteryStatus BattStatus;
 static double BattEstTotalCapacity = 450; // Battery estimated capacity in mAh.
@@ -106,10 +107,25 @@ void calculate_max_amp_freq(FreqWave *pFreqwave)
   pFreqwave->freq.brute_push_back(wave);
 }
 
+float virtualValGenerator()
+{
+  static int n = 0;
+  float val;
+
+  val = mag2[0] * arm_sin_f32(PI2 * n * freq2[0] / SAMPLE_FREQ) +
+        mag2[1] * arm_sin_f32(PI2 * n * freq2[1] / SAMPLE_FREQ) +
+        mag2[2] * arm_sin_f32(PI2 * n * freq2[2] / SAMPLE_FREQ);
+  n++;
+  if (n > 400)
+    n = 0;
+
+  return val;
+}
+
 void signal_downsampling()
 {
   static bool ADCBufferState = false;
-  static int n = 0;
+
   static int down_sampling_count[2] = {0};
 
   if ((getCurrentADCBuffer() != ADCBufferState) && (isInRun))
@@ -118,16 +134,14 @@ void signal_downsampling()
     //USART_Printf(&huart2, "Current buffer: %hhu", (uint8_t)ADCBufferState);
     uint16_t *currentBuffer = (ADCBufferState) ? ADCResult0 : ADCResult1;
 
+    float val;
     for (int i = 0; i < ADC_BUFFER_SIZE; i++)
     {
       // Convert the signal value.
-      float val = currentBuffer[i] * 8.056640625e-4;
-      /*val = mag2[0] * arm_sin_f32(PI2 * n * freq2[0] / SAMPLE_FREQ) +
-            mag2[1] * arm_sin_f32(PI2 * n * freq2[1] / SAMPLE_FREQ) +
-            mag2[2] * arm_sin_f32(PI2 * n * freq2[2] / SAMPLE_FREQ);
-      n++;
-      if (n > 400)
-        n = 0;*/
+      if (virtualVal)
+        val = currentBuffer[i] * 8.056640625e-4;
+      else
+        val = virtualValGenerator();
 
       if (oneshoot_count < ONESHOOT_SIZE)
       {
