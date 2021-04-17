@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = FrequencAnalyse
+TARGET = FrequencyAnalyse
 
 
 ######################################
@@ -215,9 +215,7 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	cd $(BUILD_DIR)
-	del /Q /S "*.d" "*.o" "*.lst"
-	cd ..
+	rm -rf $(BUILD_DIR)/*.d $(BUILD_DIR)/*.o $(BUILD_DIR)/*.lst
 
 #######################################
 # dependencies
