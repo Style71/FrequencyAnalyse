@@ -200,11 +200,11 @@ void signal_downsampling()
       }
 
       // Handle battery state.
-      uint32_t lastBattRecordTime = BattStatus.t;
+      // uint32_t lastBattRecordTime = BattStatus.t;
       BattStatus.t = GetUs();
       BattStatus.voltage = 3300;
       BattStatus.current = 140;
-      BattStatus.capacity -= (BattStatus.t - lastBattRecordTime) * (BattStatus.current / (3.6e9 * BattEstTotalCapacity));
+      BattStatus.capacity -= 1.0 * (BattStatus.current / (3600 * BattEstTotalCapacity * SAMPLE_FREQ));
     }
   }
 }
@@ -214,6 +214,8 @@ void PrintLoop()
   static int print_cnt = 0;
   static int wait_cnt = 0;
   WavePara para;
+
+  static int loop_cnt = 0;
 
   switch (stage)
   {
@@ -248,6 +250,9 @@ void PrintLoop()
         //USART_Printf(&huart1, "f3 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
       }
     }
+
+    if (loop_cnt == 0)
+      BLEStream.send_battery_info(BattStatus);
     break;
 
   case WaitSample:
@@ -282,6 +287,9 @@ void PrintLoop()
 
     break;
   }
+  loop_cnt++;
+  if (loop_cnt >= PRINTLOOP_FREQ)
+    loop_cnt = 0;
 
   /*uint64_t current = GetSysTicks();
   Time currentTime = TimeConvert(current);

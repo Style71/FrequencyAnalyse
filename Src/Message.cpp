@@ -538,7 +538,7 @@ void recv_frequency_info(uint8_t channel, WavePara &wave)
 
 void recv_battery_info(BatteryStatus &battery)
 {
-	USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf/%)\r\n", battery.t / 1000000, (battery.t / 1000) % 1000, battery.voltage / 1000, battery.current, battery.capacity);
+	USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf%%\r\n", battery.t / 1000000, (battery.t / 1000) % 1000, battery.voltage, battery.current, battery.capacity);
 }
 
 void recv_channel_enable_info(bool enable[3])
