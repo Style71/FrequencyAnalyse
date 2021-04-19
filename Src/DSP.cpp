@@ -71,6 +71,7 @@ PrintState stage = Normal;
 bool channelEnable[3] = {true, true, true};
 bool virtualVal = true;
 
+#define SCALE_ADC_12BIT_CURRENT_INTEGRAL_TO_MAH (1.0 / SAMPLE_FREQ)
 BatteryStatus BattStatus;
 static double BattEstTotalCapacity = 450; // Battery estimated capacity in mAh.
 
@@ -150,64 +151,69 @@ void signal_downsampling()
     for (int i = 0; i < ADC_BUFFER_SIZE; i++)
     {
       // Convert the signal value.
-      val = virtualValGenerator();
-      if (!virtualVal)
-        val = currentBuffer[i] * 8.056640625e-4;
-
-      if (oneshoot_count < ONESHOOT_SIZE)
+      if (i % 3 == 0)
       {
-        originalInput[oneshoot_count++] = val;
-        //filteredOutput[oneshoot_count++] = filtered_200Hz_cutoff;
-      }
+        val = virtualValGenerator();
+        if (!virtualVal)
+          val = currentBuffer[i] * 8.056640625e-4;
 
-      for (int j = 0; j < 2; j++)
-        down_sampling_count[j]++;
-
-      signal_400Hz_freq.sample[signal_400Hz_freq.tail++] = val;
-      if (signal_400Hz_freq.tail >= signal_400Hz_freq.n)
-      {
-        signal_400Hz_freq.tail = 0;
-        if (channelEnable[0])
-          calculate_max_amp_freq(&signal_400Hz_freq);
-      }
-
-      float filtered_200Hz_cutoff;
-      arm_biquad_cascade_df1_f32(&IIRFilterS, &val, &filtered_200Hz_cutoff, 1);
-
-      // SAMPLE_FREQ / .freq
-      if (down_sampling_count[0] >= (10))
-      {
-        down_sampling_count[0] = 0;
-        signal_100Hz_freq.sample[signal_100Hz_freq.tail++] = filtered_200Hz_cutoff;
-
-        if (signal_100Hz_freq.tail >= signal_100Hz_freq.n)
+        if (oneshoot_count < ONESHOOT_SIZE)
         {
-          signal_100Hz_freq.tail = 0;
-          if (channelEnable[1])
-            calculate_max_amp_freq(&signal_100Hz_freq);
+          originalInput[oneshoot_count++] = val;
+          //filteredOutput[oneshoot_count++] = filtered_200Hz_cutoff;
+        }
+
+        for (int j = 0; j < 2; j++)
+          down_sampling_count[j]++;
+
+        signal_400Hz_freq.sample[signal_400Hz_freq.tail++] = val;
+        if (signal_400Hz_freq.tail >= signal_400Hz_freq.n)
+        {
+          signal_400Hz_freq.tail = 0;
+          if (channelEnable[0])
+            calculate_max_amp_freq(&signal_400Hz_freq);
+        }
+
+        float filtered_200Hz_cutoff;
+        arm_biquad_cascade_df1_f32(&IIRFilterS, &val, &filtered_200Hz_cutoff, 1);
+
+        // SAMPLE_FREQ / .freq
+        if (down_sampling_count[0] >= (10))
+        {
+          down_sampling_count[0] = 0;
+          signal_100Hz_freq.sample[signal_100Hz_freq.tail++] = filtered_200Hz_cutoff;
+
+          if (signal_100Hz_freq.tail >= signal_100Hz_freq.n)
+          {
+            signal_100Hz_freq.tail = 0;
+            if (channelEnable[1])
+              calculate_max_amp_freq(&signal_100Hz_freq);
+          }
+        }
+        if (down_sampling_count[1] >= (10))
+        {
+          down_sampling_count[1] = 0;
+          signal_35Hz_freq.sample[signal_35Hz_freq.tail++] = filtered_200Hz_cutoff;
+          if (signal_35Hz_freq.tail >= signal_35Hz_freq.n)
+          {
+            signal_35Hz_freq.tail = 0;
+            if (channelEnable[2])
+              calculate_max_amp_freq(&signal_35Hz_freq);
+          }
         }
       }
-      if (down_sampling_count[1] >= (10))
+      else if (i % 3 == 1)
       {
-        down_sampling_count[1] = 0;
-        signal_35Hz_freq.sample[signal_35Hz_freq.tail++] = filtered_200Hz_cutoff;
-        if (signal_35Hz_freq.tail >= signal_35Hz_freq.n)
-        {
-          signal_35Hz_freq.tail = 0;
-          if (channelEnable[2])
-            calculate_max_amp_freq(&signal_35Hz_freq);
-        }
+        BattStatus.voltage = currentBuffer[i] * 8.056640625e-1;
       }
-
-      // Handle battery state.
-      // uint32_t lastBattRecordTime = BattStatus.t;
-
-      BattStatus.voltage = 3300;
-      BattStatus.current = 140;
-      intCurrent += BattStatus.current;
+      else if (i % 3 == 2)
+      {
+        intCurrent += currentBuffer[i];
+        BattStatus.current = currentBuffer[i] * 8.056640625e-1;
+      }
     }
     BattStatus.t = GetUs();
-    BattStatus.capacity = 100.00 - (intCurrent / (36 * BattEstTotalCapacity * SAMPLE_FREQ));
+    BattStatus.capacity = (1.0 - (SCALE_ADC_12BIT_CURRENT_INTEGRAL_TO_MAH * intCurrent / (BattEstTotalCapacity))) * 100.0;
   }
 }
 

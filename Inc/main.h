@@ -72,15 +72,24 @@ extern "C"
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-#define S1_Pin GPIO_PIN_6
-#define S1_GPIO_Port GPIOB
-#define S2_Pin GPIO_PIN_7
-#define S2_GPIO_Port GPIOB
+#define VMON_Pin GPIO_PIN_5
+#define VMON_GPIO_Port GPIOC
+#define IMON_Pin GPIO_PIN_0
+#define IMON_GPIO_Port GPIOB
+#define RFID_Pin GPIO_PIN_1
+#define RFID_GPIO_Port GPIOB
+#define BT_AT_Pin GPIO_PIN_1
+#define BT_AT_GPIO_Port GPIOD
+#define BT_RST_Pin GPIO_PIN_2
+#define BT_RST_GPIO_Port GPIOD
+#define BT_STA_Pin GPIO_PIN_3
+#define BT_STA_GPIO_Port GPIOD
+  /* USER CODE BEGIN Private defines */
 
-#define BT_RST_Pin GPIO_PIN_5
-#define BT_RST_GPIO_Port GPIOA
-#define BT_CLR_Pin GPIO_PIN_5
-#define BT_CLR_GPIO_Port GPIOB
+#define BT_AT_Pin GPIO_PIN_1
+#define BT_RST_Pin GPIO_PIN_2
+#define BT_STA_Pin GPIO_PIN_3
+#define BT_GPIO_Port GPIOD
 
 /* USER CODE END Private defines */
 #ifdef __cplusplus

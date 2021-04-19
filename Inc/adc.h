@@ -28,7 +28,7 @@
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
-#define ADC_BUFFER_SIZE 512 // ADC data DMA buffer size for both buffers.
+#define ADC_BUFFER_SIZE 1536 // ADC data DMA buffer size for both buffers.
 
 // ADC sample frequency.
 // This macro is used only for signal processing reference, change this macro will not affect the actual sample rate.
