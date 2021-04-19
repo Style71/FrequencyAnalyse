@@ -59,6 +59,7 @@ enum PrintState
     AfterDump = 3
 };
 extern bool channelEnable[3];
+extern bool virtualVal;
 #define PRINTLOOP_FREQ 500
 void PrintLoop();
 

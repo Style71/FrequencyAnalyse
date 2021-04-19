@@ -17,6 +17,7 @@ extern Queue<unsigned char, 1024> USART1_RX_Stream;
 extern Queue<unsigned char, 1024> USART2_RX_Stream;
 
 extern bool channelEnable[3];
+extern bool virtualVal;
 extern PrintState stage;
 extern int oneshoot_count;
 
@@ -116,6 +117,24 @@ void SampleRoutine2(const char *pcString)
 		oneshoot_count = 0;
 		stage = WaitSample;
 		USART_Puts(&huart2, "\nData recording......\n");
+	}
+}
+
+//*****************************************************************************
+// The No.3 message service routine. This function is called when the message address matches @03.
+//**********************************************************
+void SampleRoutine3(const char *pcString)
+{
+	USART_Puts(&huart2, "\nData input changed to ");
+	if (virtualVal)
+	{
+		virtualVal = false;
+		USART_Puts(&huart2, "REAL mode.\n");
+	}
+	else
+	{
+		virtualVal = true;
+		USART_Puts(&huart2, "VIRTUAL mode.\n");
 	}
 }
 
@@ -233,6 +252,9 @@ void MessageStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t payload
 		break;
 	case 2:
 		SampleRoutine2((const char *)payload);
+		break;
+	case 3:
+		SampleRoutine3((const char *)payload);
 		break;
 	default:
 		DefaultRoutine((const char *)payload);
@@ -516,7 +538,7 @@ void recv_frequency_info(uint8_t channel, WavePara &wave)
 
 void recv_battery_info(BatteryStatus &battery)
 {
-	USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf/%)\r\n", battery.t / 1000000, (battery.t / 1000) % 1000, battery.voltage / 1000, battery.current, battery.capacity);
+	USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf%%\r\n", battery.t / 1000000, (battery.t / 1000) % 1000, battery.voltage, battery.current, battery.capacity);
 }
 
 void recv_channel_enable_info(bool enable[3])

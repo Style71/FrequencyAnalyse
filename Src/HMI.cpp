@@ -77,9 +77,9 @@ void ExecuteBtnRoutine(void)
 
 void OnBTNS1Click(void)
 {
-	oneshoot_count = 0;
-	stage = WaitSample;
-	//USART_Printf(&huart1, "OnBTNS1Click() invoked.\n");
+	//oneshoot_count = 0;
+	//stage = WaitSample;
+	USART_Printf(&huart1, "OnBTNS1Click() invoked.\n");
 }
 
 void OnBTNS1Press(void)
