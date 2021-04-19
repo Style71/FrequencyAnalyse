@@ -1,4 +1,4 @@
-# FrequencyAnalyseV1.0
+# FrequencyAnalyse
 Analysing three frequency components in an anolog signal and transmitting to host using Bluetooth-UART.
 
 
