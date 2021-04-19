@@ -137,8 +137,8 @@ float virtualValGenerator()
 void signal_downsampling()
 {
   static bool ADCBufferState = false;
-
   static int down_sampling_count[2] = {0};
+  static uint64_t intCurrent = 0;
 
   if ((getCurrentADCBuffer() != ADCBufferState) && (isInRun))
   {
@@ -201,11 +201,13 @@ void signal_downsampling()
 
       // Handle battery state.
       // uint32_t lastBattRecordTime = BattStatus.t;
-      BattStatus.t = GetUs();
+
       BattStatus.voltage = 3300;
       BattStatus.current = 140;
-      BattStatus.capacity -= 1.0 * (BattStatus.current / (3600 * BattEstTotalCapacity * SAMPLE_FREQ));
+      intCurrent += BattStatus.current;
     }
+    BattStatus.t = GetUs();
+    BattStatus.capacity = 100.00 - (intCurrent / (36 * BattEstTotalCapacity * SAMPLE_FREQ));
   }
 }
 
