@@ -315,34 +315,34 @@ void ProtocolStream::send_packet(uint8_t head, uint8_t *payload, uint32_t payloa
 void ProtocolStream::send_frequency_info(uint8_t channel, WavePara &wave)
 {
 	float temp;
-	uint8_t payload[16];
+	uint8_t payload[20];
 	uint8_t head;
 	switch (channel)
 	{
 	case 1:
 		head = 0x51;
 		temp = 1.0 / signal_400Hz_freq.deltaT;
-		memcpy(&payload[12], &temp, 4);
+		memcpy(&payload[16], &temp, 4);
 		break;
 	case 2:
 		head = 0x52;
 		temp = 1.0 / signal_100Hz_freq.deltaT;
-		memcpy(&payload[12], &temp, 4);
+		memcpy(&payload[16], &temp, 4);
 		break;
 	case 3:
 		head = 0x53;
 		temp = 1.0 / signal_35Hz_freq.deltaT;
-		memcpy(&payload[12], &temp, 4);
+		memcpy(&payload[16], &temp, 4);
 		break;
 	default:
 		head = 0x50;
 		break;
 	}
-	memcpy(&payload[0], &wave.t, 4);
-	memcpy(&payload[4], &wave.freq, 4);
-	memcpy(&payload[8], &wave.mag, 4);
+	memcpy(&payload[0], &wave.t, 8);
+	memcpy(&payload[8], &wave.freq, 4);
+	memcpy(&payload[12], &wave.mag, 4);
 
-	send_packet(head, payload, 16);
+	send_packet(head, payload, 20);
 }
 
 void ProtocolStream::send_battery_info(BatteryStatus &battery)
@@ -351,13 +351,13 @@ void ProtocolStream::send_battery_info(BatteryStatus &battery)
 	uint8_t payload[9];
 	uint8_t head = 0x59;
 
-	memcpy(&payload[0], &battery.t, 4);
-	memcpy(&payload[4], &battery.voltage, 2);
-	memcpy(&payload[6], &battery.current, 2);
+	memcpy(&payload[0], &battery.t, 8);
+	memcpy(&payload[8], &battery.voltage, 2);
+	memcpy(&payload[10], &battery.current, 2);
 	temp = (uint8_t)battery.capacity;
-	memcpy(&payload[8], &temp, 1);
+	memcpy(&payload[12], &temp, 1);
 
-	send_packet(head, payload, 9);
+	send_packet(head, payload, 13);
 }
 
 void ProtocolStream::send_channel_enable_info(bool channelEnable[3])
@@ -381,17 +381,17 @@ void ProtocolStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t len)
 	case 0x51:
 	case 0x52:
 	case 0x53:
-		memcpy(&freq.t, &payload[0], 4);
-		memcpy(&freq.freq, &payload[4], 4);
-		memcpy(&freq.mag, &payload[8], 4);
+		memcpy(&freq.t, &payload[0], 8);
+		memcpy(&freq.freq, &payload[8], 4);
+		memcpy(&freq.mag, &payload[12], 4);
 
 		frequency_callback(head & 0x0F, freq);
 		break;
 	case 0x59:
-		memcpy(&Batt.t, &payload[0], 4);
-		memcpy(&Batt.voltage, &payload[4], 2);
-		memcpy(&Batt.current, &payload[6], 2);
-		Batt.capacity = payload[8];
+		memcpy(&Batt.t, &payload[0], 8);
+		memcpy(&Batt.voltage, &payload[8], 2);
+		memcpy(&Batt.current, &payload[10], 2);
+		Batt.capacity = payload[12];
 
 		battery_callback(Batt);
 		break;
@@ -469,12 +469,12 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 			ucPacketHead = cReparsingBuffer[1];
 			if ((ucPacketHead == 0x51) || (ucPacketHead == 0x52) || (ucPacketHead == 0x53))
 			{
-				if (ucPayloadLen == 16)
+				if (ucPayloadLen == 20)
 					sMessageFlags = Checksum; // Set to checksum state.
 			}
 			if (ucPacketHead == 0x59)
 			{
-				if (ucPayloadLen == 9)
+				if (ucPayloadLen == 13)
 					sMessageFlags = Checksum; // Set to checksum state.
 			}
 			if (ucPacketHead == 0x5F)
@@ -533,12 +533,12 @@ void recv_frequency_info(uint8_t channel, WavePara &wave)
 	default:
 		break;
 	}
-	USART_Printf(&huart2, "f%hhu = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", channel, wave.t / 1000000, (wave.t / 1000) % 1000, wave.freq, 1.0 / pWave->deltaT, wave.mag * 1000);
+	USART_Printf(&huart2, "f%hhu = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", channel, (uint32_t)(wave.t / 1000000), (uint32_t)((wave.t / 1000) % 1000), wave.freq, 1.0 / pWave->deltaT, wave.mag * 1000);
 }
 
 void recv_battery_info(BatteryStatus &battery)
 {
-	USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf%%\r\n", battery.t / 1000000, (battery.t / 1000) % 1000, battery.voltage, battery.current, battery.capacity);
+	USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf%%\r\n", (uint32_t)(battery.t / 1000000), (uint32_t)((battery.t / 1000) % 1000), battery.voltage, battery.current, battery.capacity);
 }
 
 void recv_channel_enable_info(bool enable[3])

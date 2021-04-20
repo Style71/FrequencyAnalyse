@@ -11,7 +11,7 @@ typedef struct _WavePara
 {
     float freq;
     float mag;
-    uint32_t t;
+    uint64_t t;
     _WavePara()
     {
         freq = 0;
@@ -34,7 +34,7 @@ typedef struct
 
 typedef struct _BattStatus
 {
-    uint32_t t;       // System time in us.
+    uint64_t t;       // System time in us.
     uint16_t voltage; // Battery voltage in mV.
     uint16_t current; // System current in mA.
     double capacity;  // Battery capacity in percentage.
