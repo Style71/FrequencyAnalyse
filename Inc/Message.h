@@ -27,7 +27,7 @@
 
 //This macro defines the maximum protocol payload size.
 #define MAX_MSG_PAYLOAD_SIZE 64
-#define MAX_PACKET_PAYLOAD_SIZE 16
+#define MAX_PACKET_PAYLOAD_SIZE 20
 
 //*****************************************************************************
 //This function fetch the chars remain in RX FIFO, and dispatch the message to corresponding
