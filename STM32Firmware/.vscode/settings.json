@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "limits": "cpp",
+        "algorithm": "cpp",
+        "deque": "c",
+        "tim.h": "c",
+        "main.h": "c",
+        "stm32f7xx_hal.h": "c",
+        "stm32f7xx_hal_conf.h": "c"
+    }
+}
