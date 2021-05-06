@@ -27,7 +27,7 @@ public class FormatFile {
                 System.out.printf("0x%02X ", bytes[i]);
             }
 
-            FileOutputStream output = new FileOutputStream("Data.dat");
+            FileOutputStream output = new FileOutputStream("Data");
             output.write(bytes);
             output.close();
 
