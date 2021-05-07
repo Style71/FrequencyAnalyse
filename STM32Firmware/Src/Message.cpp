@@ -485,10 +485,10 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 			break;
 		case Checksum: // While the state machine is in checksum state.
 			// Get the packet message index.
-			ucPayloadLen = ucBufferIndex - 1;
+			ucPayloadLen = ucBufferIndex - 1; // This ucPayloadLen contains 2 bytes head and actual payload bytes, exclude the checksum byte.
 			if (calculateChecksum(cReparsingBuffer, ucPayloadLen) == byte)
 			{
-				recv_packet(ucPacketHead, cReparsingBuffer, ucPayloadLen);
+				recv_packet(ucPacketHead, cReparsingBuffer, ucPayloadLen - 2); // The length here is the payload bytes length so we minus 2.
 				cReparsingBuffer.pop_front(ucBufferIndex);
 				ret = ucPacketHead;
 			}

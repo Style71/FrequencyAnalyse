@@ -1,12 +1,26 @@
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.Scanner;import ava.import java.nio.ByteOrder;
 
-public class Welcome {
-	public static void main(String[] args) {
+class WavePara {
+	public int t;
+	public float freq;
+	public float mag;
+	public float freq_deriv;
+
+	public WavePara() {
+		t = 0;
+		freq = 0;
+		mag = 0;
+		freq_deriv = 0;
+	}
+};
+
+pu	publicstatic void main(String[] args) {
 
 		int size;
 		Scanner input = new Scanner(System.in);
-		size = input.nextInt();
+		// size = input.nextInt();
+		size = 123;
 		input.close();
 		char[] outString = new char[size];
 
@@ -36,6 +50,39 @@ public class Welcome {
 			System.out.printf("%c ", queue.get(i));
 		}
 		System.out.print('\n');
+
+		byte[] bytefloat = { (byte) 0x87, (byte) 0xB2, (byte) 0x66, (byte) 0x30, (byte) 0x00, (byte) 0x10, (byte) 0xA4,
+				(byte) 0x43, (byte) 0xA1, (byte) 0x58, (byte) 0x8F, (byte) 0x3D, (byte) 0xFF, (byte) 0xFF, (byte) 0xF9,
+				(byte) 0x40 };
+		ByteBuffer buf = ByteBuffer.wrap(bytefloat);
+		buf.order(ByteOrder.LITTLE_ENDIAN);
+
+		WavePara freq = new WavePara();
+
+		freq.t = buf.getInt();
+		freq.freq = buf.getFloat();
+		freq.mag = buf.getFloat();
+		freq.freq_deriv = buf.getFloat();
+
+		System.out.printf("\nt = %.3f, f = %.2f+-%.2f Hz, mag = %.2f mV\n", (float) freq.t / 1000000.0, freq.freq,
+				freq.freq_deriv, freq.mag * 1000);
+
+		for (int i = 0; i < bytefloat.length; i++) {
+			bytefloat[i] = 0;
+		}
+		System.out.println("Clear all bytes in byte buffer:");
+		for (byte b : bytefloat) {
+			System.out.printf("0x%02X ", b);
+		}
+		buf.rewind();
+		buf.putInt(freq.t);
+		buf.putFloat(freq.freq);
+		buf.putFloat(freq.mag);
+		buf.putFloat(freq.freq_deriv);
+		System.out.println("\nAfter rewrite the bytes in the buffer:");
+		for (byte b : bytefloat) {
+			System.out.printf("0x%02X ", b);
+		}
 	}
 }
 

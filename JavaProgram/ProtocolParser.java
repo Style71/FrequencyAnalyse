@@ -1,13 +1,43 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+class WavePara {
+    public int t;
+    public float freq;
+    public float mag;
+    public float freq_deriv;
+
+    public WavePara() {
+        t = 0;
+        freq = 0;
+        mag = 0;
+        freq_deriv = 0;
+    }
+};
+
+class BatteryStatus {
+    public int t;
+    public short voltage;
+    public short current;
+    public byte capacity;
+
+    public BatteryStatus() {
+        t = 0;
+        voltage = 0;
+        current = 0;
+        capacity = 0;
+    }
+};
 
 public class ProtocolParser {
 
     public static final int PACKET_BUFFER_SIZE = 20; // This constant should be slightly greater than
                                                      // MAX_PACKET_PAYLOAD_SIZE
-    public static final float deltaf_400Hz_freq = 7.8;
-    public static final float deltaf_100Hz_freq = 1.25;
-    public static final float deltaf_35Hz_freq = 0.1;
+    public static final float deltaf_400Hz_freq = (float) 7.8125;
+    public static final float deltaf_100Hz_freq = (float) 0.390625;
+    public static final float deltaf_35Hz_freq = (float) 0.09765625;
 
     enum ParsingState {
         NoMessage, MessageIncoming, DecodeHead, ReceivingColon, ReceivingPayload, Checksum,
@@ -19,7 +49,7 @@ public class ProtocolParser {
 
     private RandomAccessQueue<Byte> cReparsingBuffer;
 
-    private byte calculateChecksum(char[] msg, int len) {
+    private byte calculateChecksum(byte[] msg, int len) {
         byte checksum = msg[0];
 
         for (int i = 1; i < len; i++)
@@ -29,7 +59,7 @@ public class ProtocolParser {
     }
 
     private byte calculateChecksum(RandomAccessQueue<Byte> buffer, int len) {
-        char checksum = buffer.get(0);
+        byte checksum = buffer.get(0);
 
         for (int i = 1; i < len; i++)
             checksum ^= buffer.get(i); // XOR of all bytes.
@@ -45,46 +75,47 @@ public class ProtocolParser {
         for (int i = 0; i < payload.length; i++) {
             msg[i + 2] = payload[i];
         }
-        msg[2 + payload.length] = calculateChecksum(msg, payload_len + 2);
+        msg[2 + payload.length] = calculateChecksum(msg, payload.length + 2);
 
         putc_callback(msg);
-        // USART_Putchars(&huart1, (const char *)msg, payload_len + 3);
     }
 
-    private void recv_packet(byte head, byte[] payload)
-    {
-        WavePara freq;
-        BatteryStatus Batt;
+    private void recv_packet(byte head, byte[] payload) {
+        WavePara freq = new WavePara();
+        BatteryStatus Batt = new BatteryStatus();
         boolean[] channelEnableBytes;
 
-        switch (head)
-        {
-        case 0x51:
-        case 0x52:
-        case 0x53:
-            memcpy(&freq.t, &payload[0], 4);
-            memcpy(&freq.freq, &payload[4], 4);
-            memcpy(&freq.mag, &payload[8], 4);
+        ByteBuffer buf = ByteBuffer.wrap(payload);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
 
-            frequency_callback(head & 0x0F, freq);
-            break;
-        case 0x59:
-            memcpy(&Batt.t, &payload[0], 4);
-            memcpy(&Batt.voltage, &payload[4], 2);
-            memcpy(&Batt.current, &payload[6], 2);
-            Batt.capacity = payload[8];
+        switch (head) {
+            case 0x51:
+            case 0x52:
+            case 0x53:
+                freq.t = buf.getInt();
+                freq.freq = buf.getFloat();
+                freq.mag = buf.getFloat();
+                freq.freq_deriv = buf.getFloat();
 
-            battery_callback(Batt);
-            break;
-        case 0x5F:
-            channelEnableBytes=new boolean[3];
-            for (int i = 0; i < 3; i++)
-                channelEnableBytes[i] = (payload[i]>0) ? true : false;
+                frequency_callback(head & 0x0F, freq);
+                break;
+            case 0x59:
+                Batt.t = buf.getInt();
+                Batt.voltage = buf.getShort();
+                Batt.current = buf.getShort();
+                Batt.capacity = buf.get();
 
-            channel_enable_callback(channelEnableBytes);
-            break;
-        default:
-            break;
+                battery_callback(Batt);
+                break;
+            case 0x5F:
+                channelEnableBytes = new boolean[3];
+                for (int i = 0; i < 3; i++)
+                    channelEnableBytes[i] = (payload[i] > 0) ? true : false;
+
+                channel_enable_callback(channelEnableBytes);
+                break;
+            default:
+                break;
         }
     }
 
@@ -97,9 +128,9 @@ public class ProtocolParser {
         recv_packet(head, payload);
     }
 
-    public ProtocolStream(put_chars_callback &func_put_chars, recv_channel_enable_info_callback &func_channel_enable, recv_battery_info_callback &func_battery, recv_frequency_info_callback &func_frequency){
-        cReparsingBuffer = new RandomAccessQueue<Byte>[PACKET_BUFFER_SIZE];
-        sMessageFlags = NoMessage;
+    public ProtocolParser() {
+        cReparsingBuffer = new RandomAccessQueue<Byte>(PACKET_BUFFER_SIZE);
+        sMessageFlags = ParsingState.NoMessage;
         ucBufferIndex = 0;
     }
 
@@ -107,6 +138,8 @@ public class ProtocolParser {
         byte ret = 0x00;
         byte c;
         int ucPayloadLen;
+        int i = 0;
+
         while (i < len) {
             if (ucBufferIndex == cReparsingBuffer.length)
                 cReparsingBuffer.offer(msg[i++]);
@@ -116,7 +149,7 @@ public class ProtocolParser {
                 case NoMessage: // While the state machine is in idle state.
                     if (c == 0x5A) {
                         // Get a possible packet head, change to incoming state.
-                        sMessageFlags = MessageIncoming;
+                        sMessageFlags = ParsingState.MessageIncoming;
                     } else // Discard the character if it is not '0x5A'.
                     {
                         ucBufferIndex = 0;
@@ -131,11 +164,11 @@ public class ProtocolParser {
                         case 0x59:
                         case 0x5F:
                             // Get a packet head, change to new state and record the payload.
-                            sMessageFlags = ReceivingPayload;
+                            sMessageFlags = ParsingState.ReceivingPayload;
                             break;
                         default:
                             // Reset to idle state.
-                            sMessageFlags = NoMessage;
+                            sMessageFlags = ParsingState.NoMessage;
                             // If we fail to parse the packet, discard the first byte and repase the input
                             // string from the buffer.
                             ucBufferIndex = 0;
@@ -150,29 +183,31 @@ public class ProtocolParser {
                     ucPacketHead = cReparsingBuffer.get(1);
                     if ((ucPacketHead == 0x51) || (ucPacketHead == 0x52) || (ucPacketHead == 0x53)) {
                         if (ucPayloadLen == 16)
-                            sMessageFlags = Checksum; // Set to checksum state.
+                            sMessageFlags = ParsingState.Checksum; // Set to checksum state.
                     }
                     if (ucPacketHead == 0x59) {
                         if (ucPayloadLen == 9)
-                            sMessageFlags = Checksum; // Set to checksum state.
+                            sMessageFlags = ParsingState.Checksum; // Set to checksum state.
                     }
                     if (ucPacketHead == 0x5F) {
                         if (ucPayloadLen == 3)
-                            sMessageFlags = Checksum; // Set to checksum state.
+                            sMessageFlags = ParsingState.Checksum; // Set to checksum state.
                     }
                     break;
                 case Checksum: // While the state machine is in checksum state.
                     // Get the packet message index.
-                    ucPayloadLen = ucBufferIndex - 1;
+                    ucPayloadLen = ucBufferIndex - 1;// This ucPayloadLen contains 2 bytes head and actual payload
+                                                     // bytes, exclude the checksum byte.
                     if (calculateChecksum(cReparsingBuffer, ucPayloadLen) == c) {
-                        recv_packet(ucPacketHead, cReparsingBuffer, ucPayloadLen);
+                        recv_packet(ucPacketHead, cReparsingBuffer, ucPayloadLen - 2);// The length here is the payload
+                                                                                      // bytes length so we minus 2.
                         cReparsingBuffer.take(ucBufferIndex);
                         ret = ucPacketHead;
                     } else {
                         cReparsingBuffer.take();
                     }
                     // In both case, reset to idle state.
-                    sMessageFlags = NoMessage;
+                    sMessageFlags = ParsingState.NoMessage;
                     ucBufferIndex = 0;
                     break;
                 default:
@@ -182,50 +217,46 @@ public class ProtocolParser {
         return ret;
     }
 
-    public void send_battery_info(BatteryStatus &battery)
-    {
-        byte temp;
-        byte[] payload= new byte[9];
+    public void send_battery_info(BatteryStatus battery) {
+        byte[] payload = new byte[9];
+        ByteBuffer buf = ByteBuffer.wrap(payload);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+
         byte head = 0x59;
 
-        memcpy(&payload[0], &battery.t, 4);
-        memcpy(&payload[4], &battery.voltage, 2);
-        memcpy(&payload[6], &battery.current, 2);
-        temp = (byte)battery.capacity;
-        memcpy(&payload[8], &temp, 1);
+        buf.putInt(battery.t);
+        buf.putShort(battery.voltage);
+        buf.putShort(battery.current);
+        buf.put(battery.capacity);
 
         send_packet(head, payload);
     }
 
-    public void send_frequency_info(int channel, WavePara wave)
-    {
-        float temp;
-        byte[] payload= new byte[16];
+    public void send_frequency_info(int channel, WavePara wave) {
+        byte[] payload = new byte[16];
+        ByteBuffer buf = ByteBuffer.wrap(payload);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+
         byte head;
-        switch (channel)
-        {
-        case 1:
-            head = 0x51;
-            temp = 1.0 / deltaf_400Hz_freq;
-            memcpy(&payload[12], &temp, 4);
-            break;
-        case 2:
-            head = 0x52;
-            temp = 1.0 / deltaf_100Hz_freq;
-            memcpy(&payload[12], &temp, 4);
-            break;
-        case 3:
-            head = 0x53;
-            temp = 1.0 / deltaf_35Hz_freq;
-            memcpy(&payload[12], &temp, 4);
-            break;
-        default:
-            head = 0x50;
-            break;
+        switch (channel) {
+            case 1:
+                head = 0x51;
+                break;
+            case 2:
+                head = 0x52;
+                break;
+            case 3:
+                head = 0x53;
+                break;
+            default:
+                head = 0x50;
+                break;
         }
-        memcpy(&payload[0], &wave.t, 4);
-        memcpy(&payload[4], &wave.freq, 4);
-        memcpy(&payload[8], &wave.mag, 4);
+
+        buf.putInt(wave.t);
+        buf.putFloat(wave.freq);
+        buf.putFloat(wave.mag);
+        buf.putFloat(wave.freq_deriv);
 
         send_packet(head, payload);
     }
@@ -235,23 +266,52 @@ public class ProtocolParser {
         byte head = 0x5F;
 
         for (int i = 0; i < 3; i++)
-            payload[i] = channelEnable[i] ? 1 : 0;
+            payload[i] = (channelEnable[i]) ? (byte) 1 : 0;
         send_packet(head, payload);
+    }
+
+    private void channel_enable_callback(boolean[] channelEnable) {
+        for (int i = 0; i < 3; i++) {
+            System.out.printf("Channel%i: %s \t", i, (channelEnable[i]) ? "Enabled" : "Disabled");
+        }
+        System.out.print('\n');
+    }
+
+    private void battery_callback(BatteryStatus Batt) {
+        System.out.printf("t = %.3fs, Voltage = %dmV, Current = %dmA, Capacity = %d%%\n", (float) Batt.t / 1000000.0,
+                Batt.voltage, Batt.current, Batt.capacity);
+    }
+
+    private void frequency_callback(int channel, WavePara freq) {
+        System.out.printf("t = %.3fs, f%d = %.2f+-%.2fHz, mag = %.2fmV\n", (float) freq.t / 1000000.0, channel,
+                freq.freq, freq.freq_deriv, freq.mag * 1000);
+    }
+
+    private void putc_callback(byte[] msg) {
+
     }
 
     public static void main(String[] args) {
         try {
-            InputStream fStream = new FileInputStream("Data.txt");
-            int size = fStream.available();
+            BufferedInputStream binInput = new BufferedInputStream(new FileInputStream("Data.dat"));
+            ProtocolParser parser = new ProtocolParser();
 
-            for (int i = 0; i < size; i++) {
-                System.out.print((char) fStream.read());
+            // int readCnt = 0;
+            int byteRead;
+            byte[] msg;
+
+            while ((byteRead = binInput.available()) > 0) {
+                // readCnt+=byteRead;
+                msg = binInput.readNBytes(byteRead);
+                parser.ParsingMessage(msg, byteRead);
             }
-            fStream.close();
-
-            // System.out.print(reader.readLine());
-        } catch (Exception e) {
-            // TODO: handle exception
+            // System.out.printf("\nRead %d bytes from Data.dat.\n", readCnt);
+            binInput.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println(ex.getMessage());
+            System.out.println("Input file not found!\n");
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
         }
     }
 

@@ -57,3 +57,25 @@ Analysing three frequency components in an anolog signal and transmitting to hos
 [【STM32H7教程】第24章 STM32H7的Cache解读（非常重要）](https://www.cnblogs.com/armfly/p/11008913.html)
 
 [实战经验|STM32F7 MPU Cache浅析 ](https://www.sohu.com/a/154296763_505803)
+
+| Name | Capacity| Start Address | End Address |
+| -------- | --------- | ----------- |----------- |
+| ITCM RAM | 16Kbytes | 0x0000 0000 |0x0003 FFFF |
+| DTCM RAM | 128Kbytes | 0x2000 0000 |0x2001 FFFF |
+| SRAM1 | 368Kbytes | 0x2002 0000 |0x2007 BFFF |
+| SRAM2 | 16Kbytes | 0x2007 C000 |0x2008 0000 |
+
+| Name      | Start Address | End Address | Start Address | End Address | Capacity |
+| --------- | ------------- | ----------- | ------------- | ----------- | -------- |
+| Sector 0  | 0x0800 0000   | 0x0800 7FFF | 0x0020 0000   | 0x0020 7FFF | 32       |
+| Sector 1  | 0x0800 8000   | 0x0800 FFFF | 0x0020 8000   | 0x0020 FFFF | 32       |
+| Sector 2  | 0x0801 0000   | 0x0801 7FFF | 0x0021 0000   | 0x0021 7FFF | 32       |
+| Sector 3  | 0x0801 8000   | 0x0801 FFFF | 0x0021 8000   | 0x0021 FFFF | 32       |
+| Sector 4  | 0x0802 0000   | 0x0803 FFFF | 0x0022 0000   | 0x0023 FFFF | 128      |
+| Sector 5  | 0x0804 0000   | 0x0807 FFFF | 0x0024 0000   | 0x0027 FFFF | 256      |
+| Sector 6  | 0x0808 0000   | 0x080B FFFF | 0x0028 0000   | 0x002B FFFF | 256      |
+| Sector 7  | 0x080C 0000   | 0x080F FFFF | 0x002C 0000   | 0x002F FFFF | 256      |
+| Sector 8  | 0x0810 0000   | 0x0813 FFFF | 0x0030 0000   | 0x0033 FFFF | 256      |
+| Sector 9  | 0x0814 0000   | 0x0817 FFFF | 0x0034 0000   | 0x0037 FFFF | 256      |
+| Sector 10 | 0x0818 0000   | 0x081B FFFF | 0x0038 0000   | 0x003B FFFF | 256      |
+| Sector 11 | 0x081C 0000   | 0x081F FFFF | 0x003C 0000   | 0x003F FFFF | 256      |
