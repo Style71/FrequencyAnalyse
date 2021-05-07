@@ -43,8 +43,8 @@ public:
     int get_tail() { return tail; }
 
     // Do not use these function calls unless you konw what you are doing.
-    bool set_tail(int num);
-    bool set_length(int num);
+    bool set_tail(unsigned int num);
+    bool set_length(unsigned int num);
 
     T queue[Queue_Size];
 };

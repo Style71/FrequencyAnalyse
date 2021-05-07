@@ -27,7 +27,6 @@
 #include "Message.h"
 #include "gpio.h"
 #include "Scheduler.h"
-#include "HMI.h"
 #include "arm_math.h"
 #include "DSP.h"
 /* Private includes ----------------------------------------------------------*/
@@ -103,14 +102,12 @@ int main(void)
   MX_GPIO_Init();
 
   MX_DMA_Init();
-  MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-  MX_TIM3_Init();
   MX_ADC1_Init();
   MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
-  USART_Puts(&huart2, "Hello world!\nFirmware version: V1.0, ");
+  USART_Puts(&huart2, "Hello world!\nFirmware version: V3.0, ");
   USART_Puts(&huart2, "compile time: ");
   USART_Puts(&huart2, __DATE__);
   USART_Puts(&huart2, ", ");
@@ -129,7 +126,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     run_scheduler();
-    ExecuteBtnRoutine();
     signal_downsampling();
     UpdateMessage();
     /*while (USART2_RX_Stream.size() > 0)

@@ -71,7 +71,7 @@ PrintState stage = Normal;
 bool channelEnable[3] = {true, true, true};
 bool virtualVal = true;
 
-#define SCALE_ADC_12BIT_CURRENT_INTEGRAL_TO_MAH (1.0 / SAMPLE_FREQ)
+#define SCALE_ADC_12BIT_CURRENT_INTEGRAL_TO_MAH (1000.0 * ADC_SCALE_BITS_TO_VOLT * SCALE_IMON_VOLT_TO_I_MA / SAMPLE_FREQ)
 BatteryStatus BattStatus;
 static double BattEstTotalCapacity = 450; // Battery estimated capacity in mAh.
 
@@ -155,7 +155,7 @@ void signal_downsampling()
       {
         val = virtualValGenerator();
         if (!virtualVal)
-          val = currentBuffer[i] * 8.056640625e-4;
+          val = currentBuffer[i] * ADC_SCALE_BITS_TO_VOLT;
 
         if (oneshoot_count < ONESHOOT_SIZE)
         {
@@ -204,12 +204,12 @@ void signal_downsampling()
       }
       else if (i % 3 == 1)
       {
-        BattStatus.voltage = currentBuffer[i] * 8.056640625e-1;
+        BattStatus.voltage = (uint16_t)(currentBuffer[i] * ADC_SCALE_BITS_TO_VOLT * SCALE_VMON_VOLT_TO_VIN_MV);
       }
       else if (i % 3 == 2)
       {
         intCurrent += currentBuffer[i];
-        BattStatus.current = currentBuffer[i] * 8.056640625e-1;
+        BattStatus.current = (uint16_t)(currentBuffer[i] * ADC_SCALE_BITS_TO_VOLT * SCALE_IMON_VOLT_TO_I_MA);
       }
     }
     BattStatus.t = GetUs();

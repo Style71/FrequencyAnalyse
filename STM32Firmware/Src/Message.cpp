@@ -13,7 +13,6 @@
 #include <cstring>
 
 // Extern objects declaration.
-extern Queue<unsigned char, 1024> USART1_RX_Stream;
 extern Queue<unsigned char, 1024> USART2_RX_Stream;
 
 extern bool channelEnable[3];
@@ -34,9 +33,6 @@ void recv_channel_enable_info(bool channelEnable[3]);
 // Class objects declaration.
 MessageStream USBStream;
 ProtocolStream BLEStream(putchars, recv_channel_enable_info, recv_battery_info, recv_frequency_info);
-ProtocolStream LoopbackStream(putchars, recv_channel_enable_info, recv_battery_info, recv_frequency_info);
-
-Queue<unsigned char, 1024> USART1_Loopback_Stream;
 
 void UpdateMessage()
 {
@@ -45,16 +41,7 @@ void UpdateMessage()
 	{
 		byte = USART2_RX_Stream.pop_front();
 		USBStream.ParsingMessage(&byte, 1);
-	}
-	while (USART1_RX_Stream.size() > 0)
-	{
-		byte = USART1_RX_Stream.pop_front();
 		BLEStream.ParsingMessage(&byte, 1);
-	}
-	while (USART1_Loopback_Stream.size() > 0)
-	{
-		byte = USART1_Loopback_Stream.pop_front();
-		LoopbackStream.ParsingMessage(&byte, 1);
 	}
 }
 
@@ -73,38 +60,21 @@ void DefaultRoutine(const char *pcString)
 void SampleRoutine1(const char *pcString)
 {
 	unsigned int enable[3];
-	bool logicEnable[3];
 	sscanf(pcString, "%u %u %u", &enable[0], &enable[1], &enable[2]);
 	for (int i = 0; i < 3; i++)
 	{
 		if (enable[i] == 0)
-			logicEnable[i] = false;
+			channelEnable[i] = false;
 		else
-			logicEnable[i] = true;
+			channelEnable[i] = true;
 	}
-	BLEStream.send_channel_enable_info(logicEnable);
-
-	/* 	if (enable[0] == 0)
-		channelEnable[0] = false;
-	else
-		channelEnable[0] = true;
-
-	if (enable[1] == 0)
-		channelEnable[1] = false;
-	else
-		channelEnable[1] = true;
-
-	if (enable[2] == 0)
-		channelEnable[2] = false;
-	else
-		channelEnable[2] = true;
 
 	USART_Putc(&huart2, '\n');
 	for (int i = 0; i < 3; i++)
 	{
 		USART_Printf(&huart2, "Channel%i: %s \t", i, (channelEnable[i]) ? "Enabled" : "Disabled");
 	}
-	USART_Putc(&huart2, '\n'); */
+	USART_Putc(&huart2, '\n');
 }
 
 //*****************************************************************************
@@ -348,7 +318,7 @@ void ProtocolStream::send_frequency_info(uint8_t channel, WavePara &wave)
 void ProtocolStream::send_battery_info(BatteryStatus &battery)
 {
 	uint8_t temp;
-	uint8_t payload[9];
+	uint8_t payload[13];
 	uint8_t head = 0x59;
 
 	memcpy(&payload[0], &battery.t, 8);
@@ -405,11 +375,12 @@ void ProtocolStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t len)
 		break;
 	}
 }
+
 void ProtocolStream::recv_packet(uint8_t head, Queue<unsigned char, PACKET_BUFFER_SIZE> &buffer, uint32_t payload_len)
 {
 	uint8_t payload[PACKET_BUFFER_SIZE];
 
-	for (int i = 0; i < payload_len; i++)
+	for (uint32_t i = 0; i < payload_len; i++)
 		payload[i] = buffer[i + 2];
 
 	recv_packet(head, payload, payload_len);
@@ -510,14 +481,12 @@ uint8_t ProtocolStream::ParsingMessage(uint8_t *msg, uint8_t len)
 void putchars(const char *pucArray, int size)
 {
 	// Sending packet via bluetooth.
-	USART_Putchars(&huart1, pucArray, size);
-	// Loopback to USB-UART input stream.
-	for (int i = 0; i < size; i++)
-		USART1_Loopback_Stream.push_back(pucArray[i]);
+	USART_Putchars(&huart2, pucArray, size);
 }
 
 void recv_frequency_info(uint8_t channel, WavePara &wave)
 {
+	/*
 	FreqWave *pWave;
 	switch (channel)
 	{
@@ -534,11 +503,12 @@ void recv_frequency_info(uint8_t channel, WavePara &wave)
 		break;
 	}
 	USART_Printf(&huart2, "f%hhu = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", channel, (uint32_t)(wave.t / 1000000), (uint32_t)((wave.t / 1000) % 1000), wave.freq, 1.0 / pWave->deltaT, wave.mag * 1000);
+*/
 }
 
 void recv_battery_info(BatteryStatus &battery)
 {
-	USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf%%\r\n", (uint32_t)(battery.t / 1000000), (uint32_t)((battery.t / 1000) % 1000), battery.voltage, battery.current, battery.capacity);
+	//USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf%%\r\n", (uint32_t)(battery.t / 1000000), (uint32_t)((battery.t / 1000) % 1000), battery.voltage, battery.current, battery.capacity);
 }
 
 void recv_channel_enable_info(bool enable[3])

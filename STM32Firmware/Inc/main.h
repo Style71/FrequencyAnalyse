@@ -70,8 +70,6 @@ extern "C"
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-
-/* USER CODE BEGIN Private defines */
 #define VMON_Pin GPIO_PIN_5
 #define VMON_GPIO_Port GPIOC
 #define IMON_Pin GPIO_PIN_0
@@ -86,9 +84,6 @@ extern "C"
 #define BT_STA_GPIO_Port GPIOD
   /* USER CODE BEGIN Private defines */
 
-#define BT_AT_Pin GPIO_PIN_1
-#define BT_RST_Pin GPIO_PIN_2
-#define BT_STA_Pin GPIO_PIN_3
 #define BT_GPIO_Port GPIOD
 
 /* USER CODE END Private defines */

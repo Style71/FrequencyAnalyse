@@ -140,11 +140,11 @@ bool Queue<T, Queue_Size>::replace(unsigned int index, T element)
 }
 
 template <class T, unsigned int Queue_Size>
-bool Queue<T, Queue_Size>::set_tail(int num)
+bool Queue<T, Queue_Size>::set_tail(unsigned int num)
 {
 	if (num < Queue_Size)
 	{
-		tail = num;
+		tail = (int)num;
 
 		return true;
 	}
@@ -153,13 +153,13 @@ bool Queue<T, Queue_Size>::set_tail(int num)
 }
 
 template <class T, unsigned int Queue_Size>
-bool Queue<T, Queue_Size>::set_length(int num)
+bool Queue<T, Queue_Size>::set_length(unsigned int num)
 {
 	if (num > Queue_Size)
 		return false;
 	else
 	{
-		length = num;
+		length = (int)num;
 		return true;
 	}
 }

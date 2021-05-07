@@ -8,19 +8,17 @@
 #include "Scheduler.h"
 #include "SysTime.h"
 #include "usart.h"
-#include "HMI.h"
 #include "DSP.h"
 
 Task scheduler_tasks[] = {
     SCHED_TASK(USART_20Hz_Routine, 20),
-    SCHED_TASK(UpdateButtons, 100),
     SCHED_TASK(PrintLoop, PRINTLOOP_FREQ),
 };
 
 void run_scheduler(void)
 {
     uint64_t now;
-    for (int i = 0; i < (sizeof(scheduler_tasks) / sizeof(Task)); i++)
+    for (unsigned int i = 0; i < (sizeof(scheduler_tasks) / sizeof(Task)); i++)
     {
         now = GetSysTicks();
         if (now > scheduler_tasks[i].next_due_ticks)

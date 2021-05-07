@@ -46,8 +46,22 @@ Analysing three frequency components in an anolog signal and transmitting to hos
   ```
 
 ## TODO list
-- TIM2时钟源配置
-- ADC配置
+- ~~TIM2时钟源配置~~
+- ~~ADC配置~~
+  
+  ```cpp
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.NbrOfConversion = 3;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+  ```
+- 检查初始化GPIO pin BT_AT_Pin时，应该赋以高电平还是低电平
+
+## 测试 list
+
+- 观察报文发送频率，以检查TIM2采样时钟是否配置正确
 
 ## 关于使用 DCache 导致的内存不一致问题
 [例说STM32F7高速缓存——Cache一致性问题（二）](https://blog.csdn.net/lu_embedded/article/details/78437778)

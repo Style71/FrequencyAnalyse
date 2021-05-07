@@ -54,6 +54,8 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal.c \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c.c \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_exti.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim_ex.c \
@@ -70,8 +72,7 @@ Src/DataStructure.cpp \
 Src/Message.cpp \
 Src/Scheduler.cpp \
 Src/SysTime.cpp \
-Src/usart.cpp  \
-Src/HMI.cpp 
+Src/usart.cpp 
 
 # ASM sources
 ASM_SOURCES =  \
@@ -215,8 +216,8 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	rm -rf $(BUILD_DIR)/*.d $(BUILD_DIR)/*.o $(BUILD_DIR)/*.lst
-
+	-rm -fR $(BUILD_DIR)/*.d $(BUILD_DIR)/*.lst $(BUILD_DIR)/*.o
+  
 #######################################
 # dependencies
 #######################################

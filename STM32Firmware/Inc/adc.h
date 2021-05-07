@@ -35,6 +35,10 @@
 // If you want to change the sample frequency, consider change the .Prescaler and .Period of TIM2.
 #define SAMPLE_FREQ 4000
 
+#define ADC_SCALE_BITS_TO_VOLT (8.056640625e-4) // 3.3V/4096 = 8.056640625e-4
+#define SCALE_VMON_VOLT_TO_VIN_MV 5323.529412
+#define SCALE_IMON_VOLT_TO_I_MA 2511.300853842
+
 extern ADC_HandleTypeDef hadc1;
 extern uint16_t ADCResult0[ADC_BUFFER_SIZE];
 extern uint16_t ADCResult1[ADC_BUFFER_SIZE];

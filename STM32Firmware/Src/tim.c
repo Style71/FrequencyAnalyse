@@ -90,8 +90,6 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *tim_baseHandle)
 }
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *timHandle)
 {
-
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
   if (timHandle->Instance == TIM2)
   {
     /* USER CODE BEGIN TIM3_MspPostInit 0 */

@@ -233,7 +233,8 @@ void MX_ADC1_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
+  // PCLK2 = 108 MHz, ADCCLOCK = PCLK2/ClockPrescaler = 27.0 MHz
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
@@ -243,7 +244,7 @@ void MX_ADC1_Init(void)
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 3;
   hadc1.Init.DMAContinuousRequests = ENABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV; //ADC_EOC_SEQ_CONV
+  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -252,7 +253,7 @@ void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_144CYCLES; //ADC_SAMPLETIME_3CYCLES
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -295,9 +296,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *adcHandle)
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     /**ADC1 GPIO Configuration
-    VMON    ------> PC5     ------> ADC1_IN15
-    IMON    ------> PB0     ------> ADC1_IN8
-    RFID    ------> PB1     ------> ADC1_IN9
+    VMON ------> PC5 ------> ADC1_IN15
+    IMON ------> PB0 ------> ADC1_IN8
+    RFID ------> PB1 ------> ADC1_IN9
     */
     GPIO_InitStruct.Pin = VMON_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
