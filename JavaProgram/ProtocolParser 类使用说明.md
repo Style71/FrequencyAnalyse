@@ -116,11 +116,15 @@
 
 ## 用法说明
 
-对于Android端上位机，只**需实现**一下函数：
+对于Android端上位机，只**需实现**以下函数：
 
 ```java
 private void frequency_callback(int channel, WavePara freq);
 private void battery_callback(BatteryStatus Batt);
 private void putc_callback(byte[] msg);
 ```
+
+Android端与嵌入式端的数据流如下图：
+
+![ProtocolParser类信息流示意图](..\Docs\ProtocolParser类信息流示意图.png)
 
