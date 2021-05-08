@@ -12,7 +12,7 @@
             "executable": "${workspaceFolder}/build/FrequencyAnalyse.elf",
             "device": "STM32F767VIT6",
             "configFiles": [
-                "interface/stlink-v2.cfg",
+                "interface/stlink.cfg",
                 "target/stm32f7x.cfg"
             ],
             "svdFile": "${workspaceFolder}/STM32F7x7_v1r2.svd",
@@ -22,7 +22,7 @@
         }
     ]
 }
-/* {
+/*{
     "version": "0.2.0",
     "configurations": [
         {
@@ -39,4 +39,4 @@
             "svdFile": "${workspaceFolder}/STM32F7x7_v1r2.svd",
         }
     ]
-} */
+}*/

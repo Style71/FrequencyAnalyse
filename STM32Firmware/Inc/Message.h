@@ -103,5 +103,41 @@ public:
   void send_channel_enable_info(bool channelEnable[3]);
 };
 
+class ATModeMessage
+{
+  enum ATState
+  {
+    Idle = 0,
+    MessageIncoming = 1,
+    DecodeHead = 2,
+    ReceivingColon = 3,
+    ReceivingPayload = 4,
+    Checksum = 5,
+  };
+
+private:
+  bool isInATMode;
+  Queue<unsigned char, MESSAGE_BUFFER_SIZE> ATModeRXMessage;
+  uint64_t recvLastATMsg;
+  ATState state;
+
+public:
+  ATModeMessage(/* args */);
+  ~ATModeMessage();
+  void EnterATMode();
+  void ExitATMode();
+};
+
+ATModeMessage::ATModeMessage(/* args */)
+{
+  recvLastATMsg = 0;
+  isInATMode = false;
+  state = ATState::Idle;
+}
+
+ATModeMessage::~ATModeMessage()
+{
+}
+
 extern ProtocolStream BLEStream;
 #endif /* MESSAGE_H_ */

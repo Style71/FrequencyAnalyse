@@ -9,6 +9,7 @@
   */
 #include "Message.h"
 #include "usart.h"
+#include "SysTime.h"
 #include <cctype>
 #include <cstring>
 
@@ -34,14 +35,44 @@ void recv_channel_enable_info(bool channelEnable[3]);
 MessageStream USBStream;
 ProtocolStream BLEStream(putchars, recv_channel_enable_info, recv_battery_info, recv_frequency_info);
 
+// Global variable declaration.
+
+#define ATMODE_RX_TIMEOUT_US 2000000
+#define ATMODE_RX_BYTE_ARRIVE_DIFF_TIMEOUT_US 100000
+#define WRITE_DELAY_AFTER_ENTER_ATMODE_US 800000
 void UpdateMessage()
 {
+
+	uint64_t now;
+
 	uint8_t byte;
-	while (USART2_RX_Stream.size() > 0)
+
+	if (isInATMode)
 	{
-		byte = USART2_RX_Stream.pop_front();
-		USBStream.ParsingMessage(&byte, 1);
-		BLEStream.ParsingMessage(&byte, 1);
+		now = GetUs();
+		if ((now - recvLastATMsg) > WRITE_DELAY_AFTER_ENTER_ATMODE_US)
+		{
+		}
+		if (USART2_RX_Stream.size() > 0)
+			recvLastATMsg = GetUs();
+		else
+		{
+			now = GetUs();
+		}
+
+		while (USART2_RX_Stream.size() > 0)
+		{
+			ATModeRXMessage.push_back(byte);
+		}
+	}
+	else
+	{
+		while (USART2_RX_Stream.size() > 0)
+		{
+			byte = USART2_RX_Stream.pop_front();
+			USBStream.ParsingMessage(&byte, 1);
+			BLEStream.ParsingMessage(&byte, 1);
+		}
 	}
 }
 
@@ -106,6 +137,29 @@ void SampleRoutine3(const char *pcString)
 		virtualVal = true;
 		USART_Puts(&huart2, "VIRTUAL mode.\n");
 	}
+}
+
+//*****************************************************************************
+// The No.4 message service routine. This function is called when the message address matches @04.
+//**********************************************************
+void SampleRoutine4(const char *pcString)
+{
+	isInATMode = true;
+
+	// Clear all incoming message.
+	USART2_RX_Stream.clear();
+
+	// Write AT command to CH9143 after entering AT mode for 800ms.
+	ATModeRXMessage.clear();
+	// For now we just record the time and command, but didn't send the command.
+	recvLastATMsg = GetUs();
+	int i = 0;
+	while (pcString[i] != '\0')
+	{
+		ATModeRXMessage.push_back(pcString[i++]);
+	}
+	ATModeRXMessage.push_back('\r');
+	ATModeRXMessage.push_back('\n');
 }
 
 MessageStream::MessageStream()
@@ -190,7 +244,7 @@ uint8_t MessageStream::ParsingMessage(uint8_t *msg, uint8_t len)
 			break;
 		case ReceivingPayload: // While the state machine is in payload receiving state.
 			pucPayload[ucPayloadIndex++] = byte;
-			if ((byte == '!') || (ucPayloadIndex >= MAX_PACKET_PAYLOAD_SIZE))
+			if ((byte == '!') || (ucPayloadIndex >= MAX_MSG_PAYLOAD_SIZE))
 			{
 				//Add a terminator '\0' to the end of the string and dispatch the message.
 				pucPayload[--ucPayloadIndex] = '\0';
@@ -226,6 +280,8 @@ void MessageStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t payload
 	case 3:
 		SampleRoutine3((const char *)payload);
 		break;
+	case 4:
+		SampleRoutine4((const char *)payload);
 	default:
 		DefaultRoutine((const char *)payload);
 	}

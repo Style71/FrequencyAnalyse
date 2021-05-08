@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 class WavePara {
-    public int t;
+    public long t;
     public float freq;
     public float mag;
     public float freq_deriv;
@@ -18,7 +18,7 @@ class WavePara {
 };
 
 class BatteryStatus {
-    public int t;
+    public long t;
     public short voltage;
     public short current;
     public byte capacity;
@@ -33,7 +33,7 @@ class BatteryStatus {
 
 public class ProtocolParser {
 
-    public static final int PACKET_BUFFER_SIZE = 20; // This constant should be slightly greater than
+    public static final int PACKET_BUFFER_SIZE = 32; // This constant should be slightly greater than
                                                      // MAX_PACKET_PAYLOAD_SIZE
     public static final float deltaf_400Hz_freq = (float) 7.8125;
     public static final float deltaf_100Hz_freq = (float) 0.390625;
@@ -92,7 +92,7 @@ public class ProtocolParser {
             case 0x51:
             case 0x52:
             case 0x53:
-                freq.t = buf.getInt();
+                freq.t = buf.getLong();
                 freq.freq = buf.getFloat();
                 freq.mag = buf.getFloat();
                 freq.freq_deriv = buf.getFloat();
@@ -100,7 +100,7 @@ public class ProtocolParser {
                 frequency_callback(head & 0x0F, freq);
                 break;
             case 0x59:
-                Batt.t = buf.getInt();
+                Batt.t = buf.getLong();
                 Batt.voltage = buf.getShort();
                 Batt.current = buf.getShort();
                 Batt.capacity = buf.get();
@@ -182,11 +182,11 @@ public class ProtocolParser {
                     // Get the packet head.
                     ucPacketHead = cReparsingBuffer.get(1);
                     if ((ucPacketHead == 0x51) || (ucPacketHead == 0x52) || (ucPacketHead == 0x53)) {
-                        if (ucPayloadLen == 16)
+                        if (ucPayloadLen == 20)
                             sMessageFlags = ParsingState.Checksum; // Set to checksum state.
                     }
                     if (ucPacketHead == 0x59) {
-                        if (ucPayloadLen == 9)
+                        if (ucPayloadLen == 13)
                             sMessageFlags = ParsingState.Checksum; // Set to checksum state.
                     }
                     if (ucPacketHead == 0x5F) {
@@ -224,7 +224,7 @@ public class ProtocolParser {
 
         byte head = 0x59;
 
-        buf.putInt(battery.t);
+        buf.putLong(battery.t);
         buf.putShort(battery.voltage);
         buf.putShort(battery.current);
         buf.put(battery.capacity);
@@ -253,7 +253,7 @@ public class ProtocolParser {
                 break;
         }
 
-        buf.putInt(wave.t);
+        buf.putLong(wave.t);
         buf.putFloat(wave.freq);
         buf.putFloat(wave.mag);
         buf.putFloat(wave.freq_deriv);

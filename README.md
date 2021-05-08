@@ -61,7 +61,9 @@ Analysing three frequency components in an anolog signal and transmitting to hos
 
 ## 测试 list
 
-- 观察报文发送频率，以检查TIM2采样时钟是否配置正确
+- ~~观察报文发送频率，以检查TIM2采样时钟是否配置正确~~
+- 用Debug模式观察ADCBuffer数值，检查ADC采样设置是否正确；解释电压几百mV波动的原因；
+- 解决蓝牙连接问题
 
 ## 关于使用 DCache 导致的内存不一致问题
 [例说STM32F7高速缓存——Cache一致性问题（二）](https://blog.csdn.net/lu_embedded/article/details/78437778)
