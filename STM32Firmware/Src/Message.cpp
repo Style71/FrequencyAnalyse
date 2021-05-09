@@ -341,8 +341,10 @@ void MessageStream::recv_packet(uint8_t head, uint8_t *payload, uint32_t payload
 		break;
 	case 4:
 		SampleRoutine4((const char *)payload);
+		break;
 	default:
 		DefaultRoutine((const char *)payload);
+		break;
 	}
 }
 
