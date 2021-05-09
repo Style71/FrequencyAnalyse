@@ -108,17 +108,20 @@ class ATModeMessage
   enum ATState
   {
     Idle = 0,
-    MessageIncoming = 1,
-    DecodeHead = 2,
-    ReceivingColon = 3,
-    ReceivingPayload = 4,
-    Checksum = 5,
+    WaitToSendMessage = 1,
+    WaitReplyMessage = 2,
+    WaitToPlayback = 3,
   };
 
+#define ATMODE_RX_TIMEOUT_US 2000000
+#define ATMODE_RX_BYTE_ARRIVE_DIFF_TIMEOUT_US 200000
+#define WRITE_DELAY_AFTER_ENTER_ATMODE_US 800000
+#define WRITE_DELAY_AFTER_EXIT_ATMODE_US 800000
+
 private:
-  bool isInATMode;
+  bool isATMode;
   Queue<unsigned char, MESSAGE_BUFFER_SIZE> ATModeRXMessage;
-  uint64_t recvLastATMsg;
+  uint64_t lastTick;
   ATState state;
 
 public:
@@ -126,18 +129,11 @@ public:
   ~ATModeMessage();
   void EnterATMode();
   void ExitATMode();
+  bool isInATMode() { return isATMode; }
+  uint8_t ATStateProcess(Queue<unsigned char, USART_TXRX_BUFFER_SIZE> &InputStream);
+  // Transmit AT message in a delayed manner, the message should terminate with '\0' character.
+  void TransmitATMessage(const char *msg);
 };
-
-ATModeMessage::ATModeMessage(/* args */)
-{
-  recvLastATMsg = 0;
-  isInATMode = false;
-  state = ATState::Idle;
-}
-
-ATModeMessage::~ATModeMessage()
-{
-}
 
 extern ProtocolStream BLEStream;
 #endif /* MESSAGE_H_ */

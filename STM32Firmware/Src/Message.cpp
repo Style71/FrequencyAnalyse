@@ -14,7 +14,7 @@
 #include <cstring>
 
 // Extern objects declaration.
-extern Queue<unsigned char, 1024> USART2_RX_Stream;
+extern Queue<unsigned char, USART_TXRX_BUFFER_SIZE> USART2_RX_Stream;
 
 extern bool channelEnable[3];
 extern bool virtualVal;
@@ -34,36 +34,16 @@ void recv_channel_enable_info(bool channelEnable[3]);
 // Class objects declaration.
 MessageStream USBStream;
 ProtocolStream BLEStream(putchars, recv_channel_enable_info, recv_battery_info, recv_frequency_info);
+ATModeMessage USART_AT_Proc;
 
 // Global variable declaration.
 
-#define ATMODE_RX_TIMEOUT_US 2000000
-#define ATMODE_RX_BYTE_ARRIVE_DIFF_TIMEOUT_US 100000
-#define WRITE_DELAY_AFTER_ENTER_ATMODE_US 800000
 void UpdateMessage()
 {
-
-	uint64_t now;
-
 	uint8_t byte;
-
-	if (isInATMode)
+	if (USART_AT_Proc.isInATMode())
 	{
-		now = GetUs();
-		if ((now - recvLastATMsg) > WRITE_DELAY_AFTER_ENTER_ATMODE_US)
-		{
-		}
-		if (USART2_RX_Stream.size() > 0)
-			recvLastATMsg = GetUs();
-		else
-		{
-			now = GetUs();
-		}
-
-		while (USART2_RX_Stream.size() > 0)
-		{
-			ATModeRXMessage.push_back(byte);
-		}
+		USART_AT_Proc.ATStateProcess(USART2_RX_Stream);
 	}
 	else
 	{
@@ -144,22 +124,101 @@ void SampleRoutine3(const char *pcString)
 //**********************************************************
 void SampleRoutine4(const char *pcString)
 {
-	isInATMode = true;
+	USART_AT_Proc.EnterATMode();
+	USART_AT_Proc.TransmitATMessage(pcString);
+}
 
+ATModeMessage::ATModeMessage(/* args */)
+{
+	lastTick = 0;
+	isATMode = false;
+	state = ATState::Idle;
+}
+
+ATModeMessage::~ATModeMessage()
+{
+}
+
+void ATModeMessage::EnterATMode()
+{
+	isATMode = true;
+	HAL_GPIO_WritePin(BT_AT_GPIO_Port, BT_AT_Pin, GPIO_PIN_RESET);
 	// Clear all incoming message.
 	USART2_RX_Stream.clear();
+}
 
+void ATModeMessage::ExitATMode()
+{
+	isATMode = false;
+	// Clear all incoming message.
+	USART2_RX_Stream.clear();
+	HAL_GPIO_WritePin(BT_AT_GPIO_Port, BT_AT_Pin, GPIO_PIN_SET);
+}
+
+uint8_t ATModeMessage::ATStateProcess(Queue<unsigned char, USART_TXRX_BUFFER_SIZE> &InputStream)
+{
+	uint64_t now = GetUs();
+	uint64_t dt = now - lastTick;
+	int msgSize;
+
+	switch (state)
+	{
+	case ATState::WaitToSendMessage:
+		if (dt > WRITE_DELAY_AFTER_ENTER_ATMODE_US)
+		{
+			USART_Putchars(&huart2, (const char *)ATModeRXMessage.queue, ATModeRXMessage.size());
+			ATModeRXMessage.clear();
+
+			state = WaitReplyMessage;
+			lastTick = now;
+		}
+		break;
+	case ATState::WaitReplyMessage:
+		msgSize = USART2_RX_Stream.size();
+		if (msgSize > 0)
+		{
+			lastTick = now;
+			while (msgSize > 0)
+			{
+				ATModeRXMessage.push_back(USART2_RX_Stream.pop_front());
+				msgSize--;
+			}
+		}
+		else if (((ATModeRXMessage.size() > 0) && (dt > ATMODE_RX_BYTE_ARRIVE_DIFF_TIMEOUT_US)) || ((ATModeRXMessage.size() == 0) && (dt > ATMODE_RX_TIMEOUT_US)))
+		{
+			lastTick = now;
+			state = WaitToPlayback;
+			HAL_GPIO_WritePin(BT_AT_GPIO_Port, BT_AT_Pin, GPIO_PIN_SET);
+		}
+		break;
+	case ATState::WaitToPlayback:
+		if (dt > WRITE_DELAY_AFTER_EXIT_ATMODE_US)
+		{
+			state = Idle;
+			ExitATMode();
+			USART_Putchars(&huart2, (const char *)ATModeRXMessage.queue, ATModeRXMessage.size());
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+// Transmit AT message in a delayed manner, the message should terminate with '\0' character.
+void ATModeMessage::TransmitATMessage(const char *msg)
+{
 	// Write AT command to CH9143 after entering AT mode for 800ms.
 	ATModeRXMessage.clear();
 	// For now we just record the time and command, but didn't send the command.
-	recvLastATMsg = GetUs();
+	lastTick = GetUs();
 	int i = 0;
-	while (pcString[i] != '\0')
-	{
-		ATModeRXMessage.push_back(pcString[i++]);
-	}
+	while (msg[i] != '\0')
+		ATModeRXMessage.push_back(msg[i++]);
+
 	ATModeRXMessage.push_back('\r');
 	ATModeRXMessage.push_back('\n');
+
+	state = ATState::WaitToSendMessage;
 }
 
 MessageStream::MessageStream()

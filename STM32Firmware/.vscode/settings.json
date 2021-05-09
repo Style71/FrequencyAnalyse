@@ -4,8 +4,9 @@
         "algorithm": "cpp",
         "deque": "c",
         "tim.h": "c",
-        "main.h": "c",
+        "main.h": "cpp",
         "stm32f7xx_hal.h": "c",
-        "stm32f7xx_hal_conf.h": "c"
+        "stm32f7xx_hal_conf.h": "c",
+        "type_traits": "cpp"
     }
 }

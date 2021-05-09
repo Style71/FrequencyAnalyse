@@ -13,8 +13,8 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-Queue<unsigned char, 1024> USART2_TX_Stream;
-Queue<unsigned char, 1024> USART2_RX_Stream;
+Queue<unsigned char, USART_TXRX_BUFFER_SIZE> USART2_TX_Stream;
+Queue<unsigned char, USART_TXRX_BUFFER_SIZE> USART2_RX_Stream;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart2;
