@@ -142,17 +142,16 @@ ATModeMessage::~ATModeMessage()
 void ATModeMessage::EnterATMode()
 {
 	isATMode = true;
-	HAL_GPIO_WritePin(BT_AT_GPIO_Port, BT_AT_Pin, GPIO_PIN_RESET);
+
 	// Clear all incoming message.
-	USART2_RX_Stream.clear();
+	USART2_RX_Stream.pop_front(USART2_RX_Stream.size());
 }
 
 void ATModeMessage::ExitATMode()
 {
 	isATMode = false;
 	// Clear all incoming message.
-	USART2_RX_Stream.clear();
-	HAL_GPIO_WritePin(BT_AT_GPIO_Port, BT_AT_Pin, GPIO_PIN_SET);
+	USART2_RX_Stream.pop_front(USART2_RX_Stream.size());
 }
 
 uint8_t ATModeMessage::ATStateProcess(Queue<unsigned char, USART_TXRX_BUFFER_SIZE> &InputStream)
@@ -163,6 +162,16 @@ uint8_t ATModeMessage::ATStateProcess(Queue<unsigned char, USART_TXRX_BUFFER_SIZ
 
 	switch (state)
 	{
+	case ATState::WaitToEnterATMode:
+		if (dt > DELAY_BEFORE_ENTER_ATMODE_US)
+		{
+			// Enter AT mode.
+			HAL_GPIO_WritePin(BT_AT_GPIO_Port, BT_AT_Pin, GPIO_PIN_RESET);
+
+			state = WaitToSendMessage;
+			lastTick = now;
+		}
+		break;
 	case ATState::WaitToSendMessage:
 		if (dt > WRITE_DELAY_AFTER_ENTER_ATMODE_US)
 		{
@@ -188,6 +197,7 @@ uint8_t ATModeMessage::ATStateProcess(Queue<unsigned char, USART_TXRX_BUFFER_SIZ
 		{
 			lastTick = now;
 			state = WaitToPlayback;
+			// Exit AT mode.
 			HAL_GPIO_WritePin(BT_AT_GPIO_Port, BT_AT_Pin, GPIO_PIN_SET);
 		}
 		break;
@@ -218,7 +228,7 @@ void ATModeMessage::TransmitATMessage(const char *msg)
 	ATModeRXMessage.push_back('\r');
 	ATModeRXMessage.push_back('\n');
 
-	state = ATState::WaitToSendMessage;
+	state = ATState::WaitToEnterATMode;
 }
 
 MessageStream::MessageStream()

@@ -77,6 +77,7 @@ static double BattEstTotalCapacity = 450; // Battery estimated capacity in mAh.
 static bool isInRun = false;
 
 extern ProtocolStream BLEStream;
+extern ATModeMessage USART_AT_Proc;
 
 void calculate_max_amp_freq(FreqWave *pFreqwave)
 {
@@ -230,7 +231,7 @@ void PrintLoop()
     if (!signal_400Hz_freq.freq.isEmpty())
     {
       para = signal_400Hz_freq.freq.pop_front();
-      if (channelEnable[0])
+      if ((channelEnable[0]) && (!USART_AT_Proc.isInATMode()))
       {
         //BLEStream.send_frequency_info(1, para);
         USART_Printf(&huart2, "f1 = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
@@ -240,7 +241,7 @@ void PrintLoop()
     if (!signal_100Hz_freq.freq.isEmpty())
     {
       para = signal_100Hz_freq.freq.pop_front();
-      if (channelEnable[1])
+      if ((channelEnable[1]) && (!USART_AT_Proc.isInATMode()))
       {
         //BLEStream.send_frequency_info(2, para);
         USART_Printf(&huart2, "f2 = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
@@ -250,7 +251,7 @@ void PrintLoop()
     if (!signal_35Hz_freq.freq.isEmpty())
     {
       para = signal_35Hz_freq.freq.pop_front();
-      if (channelEnable[2])
+      if ((channelEnable[2]) && (!USART_AT_Proc.isInATMode()))
       {
         //BLEStream.send_frequency_info(3, para);
         USART_Printf(&huart2, "f3 = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
@@ -258,7 +259,7 @@ void PrintLoop()
       }
     }
 
-    if (loop_cnt == 0)
+    if ((loop_cnt == 0) && (!USART_AT_Proc.isInATMode()))
     {
       //BLEStream.send_battery_info(BattStatus);
       USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf%%\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), BattStatus.voltage, BattStatus.current, BattStatus.capacity);

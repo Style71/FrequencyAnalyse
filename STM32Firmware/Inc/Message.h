@@ -108,13 +108,15 @@ class ATModeMessage
   enum ATState
   {
     Idle = 0,
-    WaitToSendMessage = 1,
-    WaitReplyMessage = 2,
-    WaitToPlayback = 3,
+    WaitToEnterATMode = 1,
+    WaitToSendMessage = 2,
+    WaitReplyMessage = 3,
+    WaitToPlayback = 4,
   };
 
 #define ATMODE_RX_TIMEOUT_US 2000000
 #define ATMODE_RX_BYTE_ARRIVE_DIFF_TIMEOUT_US 200000
+#define DELAY_BEFORE_ENTER_ATMODE_US 500000
 #define WRITE_DELAY_AFTER_ENTER_ATMODE_US 800000
 #define WRITE_DELAY_AFTER_EXIT_ATMODE_US 800000
 
