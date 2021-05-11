@@ -233,7 +233,7 @@ void PrintLoop()
       para = signal_400Hz_freq.freq.pop_front();
       if ((channelEnable[0]) && (!USART_AT_Proc.isInATMode()))
       {
-        //BLEStream.send_frequency_info(1, para);
+        BLEStream.send_frequency_info(1, para);
         USART_Printf(&huart2, "f1 = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
         //USART_Printf(&huart1, "f1 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
       }
@@ -243,7 +243,7 @@ void PrintLoop()
       para = signal_100Hz_freq.freq.pop_front();
       if ((channelEnable[1]) && (!USART_AT_Proc.isInATMode()))
       {
-        //BLEStream.send_frequency_info(2, para);
+        BLEStream.send_frequency_info(2, para);
         USART_Printf(&huart2, "f2 = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
         //USART_Printf(&huart1, "f2 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
       }
@@ -253,7 +253,7 @@ void PrintLoop()
       para = signal_35Hz_freq.freq.pop_front();
       if ((channelEnable[2]) && (!USART_AT_Proc.isInATMode()))
       {
-        //BLEStream.send_frequency_info(3, para);
+        BLEStream.send_frequency_info(3, para);
         USART_Printf(&huart2, "f3 = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
         //USART_Printf(&huart1, "f3 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
       }
@@ -261,7 +261,7 @@ void PrintLoop()
 
     if ((loop_cnt == 0) && (!USART_AT_Proc.isInATMode()))
     {
-      //BLEStream.send_battery_info(BattStatus);
+      BLEStream.send_battery_info(BattStatus);
       USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf%%\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), BattStatus.voltage, BattStatus.current, BattStatus.capacity);
     }
     break;

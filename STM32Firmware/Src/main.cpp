@@ -107,6 +107,9 @@ int main(void)
   MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
+  // Delay 5s after powerup and do not send any data to CH9143, or the bluethooth could have problem sending data to BLE host.
+  // (This bug may be fixed in later CH9143 firmware version)
+  HAL_Delay(5000);
   USART_Puts(&huart2, "Hello world!\nFirmware version: V3.0, ");
   USART_Puts(&huart2, "compile time: ");
   USART_Puts(&huart2, __DATE__);

@@ -57,13 +57,19 @@ Analysing three frequency components in an anolog signal and transmitting to hos
   hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   ```
-- 检查初始化GPIO pin BT_AT_Pin时，应该赋以高电平还是低电平
+- ~~检查初始化GPIO pin BT_AT_Pin时，应该赋以高电平还是低电平~~
 
 ## 测试 list
 
 - ~~观察报文发送频率，以检查TIM2采样时钟是否配置正确~~
 - 用Debug模式观察ADCBuffer数值，检查ADC采样设置是否正确；解释电压几百mV波动的原因；
-- 解决蓝牙连接问题
+- ~~解决蓝牙连接问题~~
+
+## Troubleshooting
+
+- 蓝牙芯片CH9143在上电后，MCU不能立即对蓝牙芯片发送数据，需要延时5s后再开始发送（蓝牙芯片固件问题，厂商设计人员已知晓，后续版本可能会修复）
+- 蓝牙芯片在同时连接USB主机和蓝牙主机时，USB主机若不开启USB串口，则蓝牙主机不会收到任何信息（蓝牙芯片厂商有意如此设计）
+- MCU在上电后第一次运行时无法响应接收到的串口数据，需要RESET后才能正常工作
 
 ## 关于使用 DCache 导致的内存不一致问题
 [例说STM32F7高速缓存——Cache一致性问题（二）](https://blog.csdn.net/lu_embedded/article/details/78437778)
