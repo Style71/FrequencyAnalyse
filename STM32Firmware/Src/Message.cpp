@@ -348,7 +348,7 @@ void ProtocolStream::send_frequency_info(uint8_t channel, WavePara &wave)
 void ProtocolStream::send_battery_info(BatteryStatus &battery)
 {
 	uint8_t temp;
-	uint8_t payload[9];
+	uint8_t payload[13];
 	uint8_t head = 0x59;
 
 	memcpy(&payload[0], &battery.t, 8);
