@@ -1,5 +1,7 @@
 import java.util.ArrayList;
-import java.util.Scanner;import ava.import java.nio.ByteOrder;
+import java.util.Scanner;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 class WavePara {
 	public int t;
@@ -13,9 +15,10 @@ class WavePara {
 		mag = 0;
 		freq_deriv = 0;
 	}
+
 };
 
-pu	publicstatic void main(String[] args) {
+	public static void main(String[] args) {
 
 		int size;
 		Scanner input = new Scanner(System.in);
@@ -84,7 +87,6 @@ pu	publicstatic void main(String[] args) {
 			System.out.printf("0x%02X ", b);
 		}
 	}
-}
 
 /**
  * @author 没事啦 为支持队列的随机访问，自定义一个简单长度固定的队列的队列 内部用ArrayList实现来实现循环队列 规则：从队尾进，从队首出
@@ -92,7 +94,6 @@ pu	publicstatic void main(String[] args) {
  *
  */
 class RandomAccessQueue<T> {
-
 	private int size; // 队列容量
 
 	public int length; // 队列长度
