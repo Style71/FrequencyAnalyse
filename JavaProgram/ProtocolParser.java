@@ -218,7 +218,7 @@ public class ProtocolParser {
     }
 
     public void send_battery_info(BatteryStatus battery) {
-        byte[] payload = new byte[9];
+        byte[] payload = new byte[13];
         ByteBuffer buf = ByteBuffer.wrap(payload);
         buf.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -233,7 +233,7 @@ public class ProtocolParser {
     }
 
     public void send_frequency_info(int channel, WavePara wave) {
-        byte[] payload = new byte[16];
+        byte[] payload = new byte[20];
         ByteBuffer buf = ByteBuffer.wrap(payload);
         buf.order(ByteOrder.LITTLE_ENDIAN);
 
