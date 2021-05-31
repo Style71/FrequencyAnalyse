@@ -88,7 +88,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  HAL_Delay(500);
   /* USER CODE END Init */
 
   /* Configure the system clock */
