@@ -9,17 +9,18 @@
 #define MAX_SAMPLE_POINTS 4096
 #define STAGE_NUM 6
 
-#define FREQWAVE_INIT(_name, _fs, _sample_points, _lower, _upper)           \
-  float _name##_buffer[_sample_points];                                     \
-  FreqWave _name =                                                          \
-      {                                                                     \
-          .sample = _name##_buffer,                                         \
-          .tail = 0,                                                        \
-          .sample_freq = _fs,                                               \
-          .n = _sample_points,                                              \
-          .deltaT = (_sample_points / (float)_fs),                          \
-          .upperbound = (uint16_t)((_upper / (float)_fs) * _sample_points), \
-          .lowerbound = (uint16_t)((_lower / (float)_fs) * _sample_points)}
+#define FREQWAVE_INIT(_name, _fs, _sample_points, _lower, _upper)        \
+  float _name##_buffer[_sample_points];                                  \
+  FreqWave _name =                                                       \
+      {                                                                  \
+        sample : _name##_buffer,                                         \
+        tail : 0,                                                        \
+        sample_freq : _fs,                                               \
+        n : _sample_points,                                              \
+        deltaT : (_sample_points / (float)_fs),                          \
+        upperbound : (uint16_t)((_upper / (float)_fs) * _sample_points), \
+        lowerbound : (uint16_t)((_lower / (float)_fs) * _sample_points)  \
+      }
 
 const float Gain[STAGE_NUM] = {0.01043620054, 0.009894934483, 0.009464552626, 0.009154595435, 0.00896828156, 0.09437258542};
 const float NUM[STAGE_NUM][3] = {

@@ -216,10 +216,15 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
+ifeq ($(OS),Windows_NT)
+# Clean command in Windows bash.
+	cd $(BUILD_DIR)
+	del /Q /S "*.d" "*.o" "*.lst"
+	cd ..
+else
+# Clean command in Ubuntu shell.
 	rm -rf $(BUILD_DIR)/*.d $(BUILD_DIR)/*.o $(BUILD_DIR)/*.lst
-#	cd $(BUILD_DIR)
-#	del /Q /S "*.d" "*.o" "*.lst"
-#	cd ..
+endif
 #######################################
 # dependencies
 #######################################
