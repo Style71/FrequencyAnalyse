@@ -93,6 +93,40 @@ void SampleRoutine1(const char *pcString)
 //**********************************************************
 void SampleRoutine2(const char *pcString)
 {
+	char str[64];
+	int i = 0;
+	int argc;
+	char *argv[MAX_ARGX];
+
+	while (pcString[i] != '\0')
+	{
+		str[i] = pcString[i];
+	}
+
+	getarg(str, argc, argv);
+	if (argc == 0)
+		return;
+
+	if (strcmp(argv[0], "dump") == 0)
+	{
+		process_dump(argc, argv);
+	}
+
+	if (strcmp(argv[0], "mode") == 0)
+	{
+		process_mode(argc, argv);
+	}
+
+	if (strcmp(argv[0], "ATComm") == 0)
+	{
+		process_ATComm(argc, argv);
+	}
+
+	if (strcmp(argv[0], "ls") == 0)
+	{
+		process_ls();
+	}
+
 	if ((strcmp(pcString, "oneshoot") == 0) || (strcmp(pcString, "Oneshoot") == 0) || (strcmp(pcString, "ONESHOOT") == 0))
 	{
 		oneshoot_count = 0;

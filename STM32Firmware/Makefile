@@ -72,7 +72,8 @@ Src/DataStructure.cpp \
 Src/Message.cpp \
 Src/Scheduler.cpp \
 Src/SysTime.cpp \
-Src/usart.cpp 
+Src/usart.cpp \
+Src/getopt.cpp
 
 # ASM sources
 ASM_SOURCES =  \
