@@ -10,6 +10,7 @@
 #include "Message.h"
 #include "usart.h"
 #include "SysTime.h"
+#include "process.h"
 #include <cctype>
 #include <cstring>
 
@@ -18,12 +19,6 @@ extern Queue<unsigned char, USART_TXRX_BUFFER_SIZE> USART2_RX_Stream;
 
 extern bool channelEnable[3];
 extern bool virtualVal;
-extern PrintState stage;
-extern int oneshoot_count;
-
-extern FreqWave signal_400Hz_freq;
-extern FreqWave signal_100Hz_freq;
-extern FreqWave signal_35Hz_freq;
 
 // Function declaration.
 void putchars(const char *pucArray, int size);
@@ -126,13 +121,6 @@ void SampleRoutine2(const char *pcString)
 	{
 		process_ls();
 	}
-
-	if ((strcmp(pcString, "oneshoot") == 0) || (strcmp(pcString, "Oneshoot") == 0) || (strcmp(pcString, "ONESHOOT") == 0))
-	{
-		oneshoot_count = 0;
-		stage = WaitSample;
-		USART_Puts(&huart2, "\nData recording......\n");
-	}
 }
 
 //*****************************************************************************
@@ -188,7 +176,7 @@ void ATModeMessage::ExitATMode()
 	USART2_RX_Stream.pop_front(USART2_RX_Stream.size());
 }
 
-uint8_t ATModeMessage::ATStateProcess(Queue<unsigned char, USART_TXRX_BUFFER_SIZE> &InputStream)
+void ATModeMessage::ATStateProcess(Queue<unsigned char, USART_TXRX_BUFFER_SIZE> &InputStream)
 {
 	uint64_t now = GetUs();
 	uint64_t dt = now - lastTick;

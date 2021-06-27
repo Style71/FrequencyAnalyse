@@ -4,7 +4,7 @@
 #include "adc.h"
 #include "usart.h"
 #include "SysTime.h"
-#include "Message.h"
+#include "process.h"
 
 #define MAX_SAMPLE_POINTS 4096
 #define STAGE_NUM 6
@@ -49,8 +49,6 @@ arm_biquad_casd_df1_inst_f32 IIRFilterS;
 static float Coeffs[5 * STAGE_NUM];
 static float initState[4 * STAGE_NUM] = {0};
 
-float testOutput_f32[MAX_SAMPLE_POINTS + 2];
-
 // !!! Caution: for the arm DSP fft function to work properly, the sample points must be 4096 \ 2048 \ 1024 \ 512 \ 256 \ 64.
 // Meanwhile, testOutput_f32[MAX_SAMPLE_POINTS + 2] is used for temperarily storing the FFT data, thus the sample points mustn't be
 // greater than MAX_SAMPLE_POINTS.
@@ -63,11 +61,7 @@ float Vmag[3] = {0.2, 0.12, 0.09};
 float fderivationfreq[3] = {0.0025, 0.01, 0.2};
 float basefreq[3] = {30, 100, 300};
 
-#define ONESHOOT_SIZE 40960
-float originalInput[ONESHOOT_SIZE];
 //float filteredOutput[1024];
-int oneshoot_count = ONESHOOT_SIZE;
-PrintState stage = Normal;
 bool channelEnable[3] = {true, true, true};
 bool virtualVal = true;
 
@@ -77,12 +71,16 @@ static double BattEstTotalCapacity = 450; // Battery estimated capacity in mAh.
 
 static bool isInRun = false;
 
-extern ProtocolStream BLEStream;
-extern ATModeMessage USART_AT_Proc;
+extern int numOfSample;
+extern int sample_cnt;
+extern float originalInput[MAX_SAMPLE_NUM];
+extern int dumpChannel;
+extern PrintState stage;
 
 void calculate_max_amp_freq(FreqWave *pFreqwave)
 {
   WavePara wave;
+  float fftOutput_f32[MAX_SAMPLE_POINTS + 2];
 
   int N = pFreqwave->n;
   if (arm_rfft_fast_init_f32(&S, N) == ARM_MATH_ARGUMENT_ERROR)
@@ -90,19 +88,19 @@ void calculate_max_amp_freq(FreqWave *pFreqwave)
     Error_Handler();
   }
   // temp = { real[0], real[(N/2)], real[1], imag[1], real[2], imag[2] ... real[(N/2)-1], imag[(N/2)-1] }
-  arm_rfft_fast_f32(&S, pFreqwave->sample, testOutput_f32, 0);
-  testOutput_f32[N] = testOutput_f32[1];
-  testOutput_f32[N + 1] = 0;
-  testOutput_f32[1] = 0;
+  arm_rfft_fast_f32(&S, pFreqwave->sample, fftOutput_f32, 0);
+  fftOutput_f32[N] = fftOutput_f32[1];
+  fftOutput_f32[N + 1] = 0;
+  fftOutput_f32[1] = 0;
 
   /* Process the data through the Complex Magnitude Module for
   calculating the magnitude at each bin */
   N = pFreqwave->upperbound - pFreqwave->lowerbound + 1;
-  arm_cmplx_mag_f32(&testOutput_f32[pFreqwave->lowerbound * 2], testOutput_f32, N);
+  arm_cmplx_mag_f32(&fftOutput_f32[pFreqwave->lowerbound * 2], fftOutput_f32, N);
 
   uint32_t binIndex;
   /* Calculates maxValue and returns corresponding BIN value */
-  arm_max_f32(testOutput_f32, N, &wave.mag, &binIndex);
+  arm_max_f32(fftOutput_f32, N, &wave.mag, &binIndex);
   wave.mag *= (2.0 / pFreqwave->n);
   wave.freq = ((binIndex + pFreqwave->lowerbound) * pFreqwave->sample_freq) / pFreqwave->n;
   wave.t = GetUs();
@@ -158,9 +156,9 @@ void signal_downsampling()
         if (!virtualVal)
           val = currentBuffer[i] * ADC_SCALE_BITS_TO_VOLT;
 
-        if (oneshoot_count < ONESHOOT_SIZE)
+        if ((stage == WaitSample) && (dumpChannel == 1) && (sample_cnt < numOfSample))
         {
-          originalInput[oneshoot_count++] = val;
+          originalInput[sample_cnt++] = val;
           //filteredOutput[oneshoot_count++] = filtered_200Hz_cutoff;
         }
 
@@ -206,141 +204,28 @@ void signal_downsampling()
       else if (i % 3 == 1)
       {
         BattStatus.voltage = (uint16_t)(currentBuffer[i] * ADC_SCALE_BITS_TO_VOLT * SCALE_VMON_VOLT_TO_VIN_MV);
+
+        if ((stage == WaitSample) && (dumpChannel == 2) && (sample_cnt < numOfSample))
+        {
+          *((uint16_t *)&originalInput[sample_cnt]) = BattStatus.voltage;
+          sample_cnt++;
+        }
       }
       else if (i % 3 == 2)
       {
         intCurrent += currentBuffer[i];
         BattStatus.current = (uint16_t)(currentBuffer[i] * ADC_SCALE_BITS_TO_VOLT * SCALE_IMON_VOLT_TO_I_MA);
+
+        if ((stage == WaitSample) && (dumpChannel == 3) && (sample_cnt < numOfSample))
+        {
+          *((uint16_t *)&originalInput[sample_cnt]) = BattStatus.current;
+          sample_cnt++;
+        }
       }
     }
     BattStatus.t = GetUs();
     BattStatus.capacity = (1.0 - (SCALE_ADC_12BIT_CURRENT_INTEGRAL_TO_MAH * intCurrent / (BattEstTotalCapacity))) * 100.0;
   }
-}
-
-void PrintLoop()
-{
-  static int print_cnt = 0;
-  static int wait_cnt = 0;
-  WavePara para;
-
-  static int loop_cnt = 0;
-
-  switch (stage)
-  {
-  case Normal:
-    if (!signal_400Hz_freq.freq.isEmpty())
-    {
-      para = signal_400Hz_freq.freq.pop_front();
-      if ((channelEnable[0]) && (!USART_AT_Proc.isInATMode()))
-      {
-        BLEStream.send_frequency_info(1, para);
-        USART_Printf(&huart2, "f1 = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
-        //USART_Printf(&huart1, "f1 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_400Hz_freq.deltaT, para.mag * 1000);
-      }
-    }
-    if (!signal_100Hz_freq.freq.isEmpty())
-    {
-      para = signal_100Hz_freq.freq.pop_front();
-      if ((channelEnable[1]) && (!USART_AT_Proc.isInATMode()))
-      {
-        BLEStream.send_frequency_info(2, para);
-        USART_Printf(&huart2, "f2 = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
-        //USART_Printf(&huart1, "f2 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_100Hz_freq.deltaT, para.mag * 1000);
-      }
-    }
-    if (!signal_35Hz_freq.freq.isEmpty())
-    {
-      para = signal_35Hz_freq.freq.pop_front();
-      if ((channelEnable[2]) && (!USART_AT_Proc.isInATMode()))
-      {
-        BLEStream.send_frequency_info(3, para);
-        USART_Printf(&huart2, "f3 = (%u.%03us, %.2f+-%.2fHz, %.2fmV)\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
-        //USART_Printf(&huart1, "f3 = (%.2fs, %.2f+-%.2fHz, %.2fmV)\r\n", para.t / 1000000.0, para.freq, 1.0 / signal_35Hz_freq.deltaT, para.mag * 1000);
-      }
-    }
-
-    if ((loop_cnt == 0) && (!USART_AT_Proc.isInATMode()))
-    {
-      BLEStream.send_battery_info(BattStatus);
-      USART_Printf(&huart2, "Time: %u.%03us, voltage: %humV, current: %humA, capacity: %.2lf%%\r\n", (uint32_t)(BattStatus.t / 1000000), (uint32_t)((BattStatus.t / 1000) % 1000), BattStatus.voltage, BattStatus.current, BattStatus.capacity);
-    }
-    break;
-
-  case WaitSample:
-    if (oneshoot_count >= ONESHOOT_SIZE)
-    {
-      stage = DumpSample;
-      print_cnt = 0;
-    }
-    break;
-
-  case DumpSample:
-    if (print_cnt < ONESHOOT_SIZE)
-    {
-      USART_Printf(&huart2, "%.4f\t", originalInput[print_cnt++]);
-      //USART_Printf(&huart1, "%.4f\t", originalInput[print_cnt++]);
-    }
-    else
-      stage = AfterDump;
-    break;
-
-  case AfterDump:
-    if (wait_cnt < PRINTLOOP_FREQ * 3)
-      wait_cnt++;
-    else
-    {
-      wait_cnt = 0;
-      stage = Normal;
-    }
-    break;
-
-  default:
-
-    break;
-  }
-  loop_cnt++;
-  if (loop_cnt >= PRINTLOOP_FREQ)
-    loop_cnt = 0;
-
-  /*uint64_t current = GetSysTicks();
-  Time currentTime = TimeConvert(current);
-  USART_Printf(&huart2, "Ticks: %llu, time: %02u:%02u:%02u.%03u%03u, timer2:%u, ", current, currentTime.ulHour, currentTime.ulMinite,
-               currentTime.ulSecond, currentTime.ulMs, currentTime.ulUs, Timer3Count);
-  double average = sampleCount;
-  average *= (216000000);
-  average /= current;
-  USART_Printf(&huart2, "Buffer: %u, Transferred: %u, average:%.0f\n", (bool)(hdma_adc1.Instance->CR & DMA_SxCR_CT), 3600 - __HAL_DMA_GET_COUNTER(&hdma_adc1), average);*/
-  /*static int stage = 0;
-  //static bool nextRound = 0;
-  if (stage < (NPT / 2 + 1))
-  {
-    USART_Printf(&huart2, "%i %.2f\r\n", stage, testOutput_f32[stage]);
-    stage++;
-  }
-  else
-  {
-    //if (!nextRound)
-    //{
-      //nextRound = true;
-      for (uint16_t i = 0; i < NPT; i++)
-      {
-        testInput_f32[i] = mag2[0] * arm_sin_f32(PI2 * i * freq2[0] / Fs) +
-                           mag2[1] * arm_sin_f32(PI2 * i * freq2[1] / Fs) +
-                           mag2[2] * arm_sin_f32(PI2 * i * freq2[2] / Fs);
-      }
-      if (arm_rfft_fast_init_f32(&S, NPT) == ARM_MATH_ARGUMENT_ERROR)
-      {
-        Error_Handler();
-      }
-      arm_rfft_fast_f32(&S, testInput_f32, testOutput_f32, ifftFlag);
-      testOutput_f32[NPT] = testOutput_f32[1];
-      testOutput_f32[NPT + 1] = 0;
-      testOutput_f32[1] = 0;
-      arm_cmplx_mag_f32(testOutput_f32, testOutput_f32, NPT / 2 + 1);
-      stage = 0;
-    //}
-  }*/
 }
 
 void InitFilter()

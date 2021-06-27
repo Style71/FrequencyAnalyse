@@ -51,13 +51,6 @@ typedef struct _BattStatus
 
 void signal_downsampling();
 
-enum PrintState
-{
-    Normal = 0,
-    WaitSample = 1,
-    DumpSample = 2,
-    AfterDump = 3
-};
 extern bool channelEnable[3];
 extern bool virtualVal;
 #define PRINTLOOP_FREQ 500

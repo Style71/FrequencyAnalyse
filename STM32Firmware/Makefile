@@ -73,7 +73,8 @@ Src/Message.cpp \
 Src/Scheduler.cpp \
 Src/SysTime.cpp \
 Src/usart.cpp \
-Src/getopt.cpp
+Src/getopt.cpp \
+Src/process.cpp
 
 # ASM sources
 ASM_SOURCES =  \
@@ -143,7 +144,7 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F7xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/CMSIS/DSP/Include
-
+ 
 CXX_INCLUDES = \
 -IInc
 

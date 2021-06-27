@@ -132,7 +132,7 @@ public:
   void EnterATMode();
   void ExitATMode();
   bool isInATMode() { return isATMode; }
-  uint8_t ATStateProcess(Queue<unsigned char, USART_TXRX_BUFFER_SIZE> &InputStream);
+  void ATStateProcess(Queue<unsigned char, USART_TXRX_BUFFER_SIZE> &InputStream);
   // Transmit AT message in a delayed manner, the message should terminate with '\0' character.
   void TransmitATMessage(const char *msg);
 };

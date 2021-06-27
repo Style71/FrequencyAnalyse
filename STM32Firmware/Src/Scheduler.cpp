@@ -9,6 +9,7 @@
 #include "SysTime.h"
 #include "usart.h"
 #include "DSP.h"
+#include "process.h"
 
 Task scheduler_tasks[] = {
     SCHED_TASK(USART_20Hz_Routine, 20),
