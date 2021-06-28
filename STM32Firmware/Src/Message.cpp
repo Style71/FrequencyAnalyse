@@ -32,6 +32,9 @@ ProtocolStream BLEStream(putchars, recv_channel_enable_info, recv_battery_info, 
 ATModeMessage USART_AT_Proc;
 
 // Global variable declaration.
+extern FreqWave signal_400Hz_freq;
+extern FreqWave signal_100Hz_freq;
+extern FreqWave signal_35Hz_freq;
 
 void UpdateMessage()
 {

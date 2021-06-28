@@ -14,7 +14,7 @@ const char *processName[PROCESS_NUM] = {"dump", "mode", "ATComm"};
 #define printf(...) USART_Printf(&huart2, #__VA_ARGS__)
 #define puts(str) USART_Puts(&huart2, str)
 #define putc(char) USART_Putc(&huart2, char)
-#define putchars(pucArray,size) USART_Putchars(&huart2, pucArray, size)
+#define putchars(pucArray, size) USART_Putchars(&huart2, pucArray, size)
 
 float originalInput[MAX_SAMPLE_NUM];
 int numOfSample = INIT_SAMPLE_NUM;
@@ -32,6 +32,9 @@ extern FreqWave signal_100Hz_freq;
 extern FreqWave signal_35Hz_freq;
 extern BatteryStatus BattStatus;
 
+extern bool virtualVal;
+extern ATModeMessage USART_AT_Proc;
+
 //
 // getarg
 //
@@ -43,36 +46,102 @@ void getarg(char str[], int &argc, char *argv[])
     int head = 0;
     int tail = 0;
     argc = 0;
+    int quoteMarks = 0;
+    bool isCharAccepting = false;
 
     while (str[head] != '\0')
     {
-        // Discard heading space, indent, newline characters in the string.
-        while (((str[head] == ' ') || (str[head] == '\t') || (str[head] == '\n')) && (str[head] != '\0'))
-            head++;
-
-        if (str[head] != '\0')
+        switch (quoteMarks)
         {
-            // Copy argument address
-            argv[argc++] = &str[tail];
-            // Copy arguments
-            while ((str[head] != ' ') && (str[head] != '\n') && (str[head] != '\t') && (str[head] != '\0'))
+        case 0:
+            switch (str[head])
             {
-                str[tail++] = str[head++];
-            }
-            // Check terminator first
-            if ((str[head] == '\0') || ((argc + 1) >= MAX_ARGX))
-            { // Parsing complete, add a terminator to the last argument string and exit.
-                // We shoul first check str[head] == '\0' then add '\0' to str[tail], otherwise we may exit before parsing complete when head equals to tail.
-                str[tail++] = '\0';
+            case ' ':
+            case '\t':
+            case '\n':
+                // If we are in accepting argument character state, add a terminator to the tail and move forward, else, skip this charater.
+                if (isCharAccepting)
+                {
+                    // Add a terminator to the end of argument string.
+                    str[tail++] = '\0';
+                    // End of accepting characters.
+                    isCharAccepting = false;
+                }
+                break;
+            case '"':
+                // Receive a left quotation mark.
+                quoteMarks = 1;
+                break;
+            default:
+                // Receive a normal character.
+                if (!isCharAccepting) // If we are receiving the first character of an argument, set argv[argc] to current string address.
+                {
+                    isCharAccepting = true;
+                    argv[argc++] = &str[tail];
+                }
+                str[tail++] = str[head];
                 break;
             }
-            // Add a terminator to the last argument string.
-            str[tail++] = '\0';
-            // After tail increment, head may be less than tail and point to the padded '\0', so we need to increase head to skip this terminator.
-            if (head < tail)
-                head = tail;
+            head++;
+            break;
+        case 1:
+            switch (str[head])
+            {
+            case '"':
+                // Receive a right quotation mark.
+                quoteMarks = 2;
+                break;
+            default:
+                // Receive a normal character or space, indent, newline character.
+                if (!isCharAccepting) // If we are receiving the first character of an argument, set argv[argc] to current string address.
+                {
+                    isCharAccepting = true;
+                    argv[argc++] = &str[tail];
+                }
+                str[tail++] = str[head];
+                break;
+            }
+            head++;
+            break;
+        case 2:
+            switch (str[head])
+            {
+            case ' ':
+            case '\t':
+            case '\n':
+                // If we are in accepting argument character state, add a terminator to the tail and move forward, else, skip this charater.
+                if (isCharAccepting)
+                {
+                    // Add a terminator to the end of argument string.
+                    str[tail++] = '\0';
+                    // End of accepting characters.
+                    isCharAccepting = false;
+                }
+                // In either case, set quoteMarks to 0.
+                quoteMarks = 0;
+                break;
+            case '"':
+                // Receive a left quotation mark again.
+                quoteMarks = 1;
+                break;
+            default:
+                // Receive a normal character, pend is to the string in the quotation mark.
+                if (!isCharAccepting) // If we are receiving the first character of an argument, set argv[argc] to current string address.
+                {
+                    isCharAccepting = true;
+                    argv[argc++] = &str[tail];
+                }
+                str[tail++] = str[head];
+                // Set quoteMarks to 0.
+                quoteMarks = 0;
+                break;
+            }
+            head++;
+            break;
         }
     }
+    // Parse complete, add a terminator to the end of argument string.
+    str[tail++] = '\0';
     // Accoording to POSIX standard, argv[argc] should be a NULL pointer.
     argv[argc] = NULL;
 }
@@ -88,7 +157,7 @@ void dump_usage()
                                                                                                                             "[-f <format>]\t\t\t\tData output format.( For channel 1, default: .3f, for channel 2,3, dedfault: u )\n"
                                                                                                                             "\tb\t\t\t\t32-bits float binary or 16-bits uint16_t binary, depending on the channel\n"
                                                                                                                             "\t.Xf\t\t\t\t32-bits float text with X(0~" xstr(MAX_DIGITS) ", default:" xstr(INIT_DIGITS) ") digits, for channel 1 only\n"
-                                                                                                                            "\tu\t\t\t\t16-bits uint16_t text, for channel 2 or 3 only\n"
+                                                                                                                                                                                                                        "\tu\t\t\t\t16-bits uint16_t text, for channel 2 or 3 only\n"
                                                                                                                                                                                                                         "\n"
                                                                                                                                                                                                                         "[-h]\t\t\t\t\tDisplay this information.\n");
 }
@@ -99,11 +168,12 @@ int process_dump(int argc, const char *argv[])
     // Initialize global configurations.
     dumpChannel = 1;
     numOfSample = INIT_SAMPLE_NUM;
-    isOutputBinary=false;
-    outDigits=INIT_DIGITS;
+    isOutputBinary = false;
+    outDigits = INIT_DIGITS;
 
     bool isPrintUsage = false;
     // Parse options.
+    optind = 1;
     while ((ch = getopt(argc, argv, "c:f:n:h")) != -1)
     {
         switch (ch)
@@ -155,7 +225,7 @@ int process_dump(int argc, const char *argv[])
             break;
         }
     }
-    // If command error ocurrs or '-h' option is selected, print usage and exit. 
+    // If command error ocurrs or '-h' option is selected, print usage and exit.
     if (isPrintUsage)
     {
         dump_usage();
@@ -170,17 +240,112 @@ int process_dump(int argc, const char *argv[])
     // Start sampling.
     sample_cnt = 0;
     stage = WaitSample;
-    
+
     return 0;
+}
+
+void mode_usage()
+{
+    puts("\nUsage: mode options \n"
+         "Change ADC channel 1 sample values between real ADC values and generated simulation values.\n"
+         "Options:\n"
+         "-v \t\t\t\tgenerated simulation values.\n"
+         "-r \t\t\t\treal ADC values.\n"
+         "-s \t\t\t\tshow current ADC channel 1 mode.\n"
+         "[-h]\t\t\t\tDisplay help information.\n");
 }
 
 int process_mode(int argc, const char *argv[])
 {
+    int ch;
+    bool isPrintUsage = false;
+    bool isVirtual = false;
+    int optcnt = 0;
+    // Parse options.
+    optind = 1;
+    while ((ch = getopt(argc, argv, "rvsh")) != -1)
+    {
+        switch (ch)
+        {
+        case 'h':
+            isPrintUsage = true;
+            optcnt++;
+            break;
+        case 'r':
+            isVirtual = false;
+            optcnt++;
+            break;
+        case 'v':
+            isVirtual = true;
+            optcnt++;
+            break;
+        case 's':
+            printf("Current mode: %s.\n", virtualVal ? "VIRTUAL" : "REAL");
+            break;
+        case '?':
+            printf("Unknown option `-%c'.\n", optopt);
+            isPrintUsage = true;
+            break;
+        }
+    }
+    // If command error ocurrs or '-h' option is selected, or more than one options are selected, print usage and exit.
+    if ((isPrintUsage) || (optcnt > 1))
+    {
+        mode_usage();
+        return -1;
+    }
+
+    // Change mode.
+    virtualVal = isVirtual;
+    puts("\nADC channel 1 data changed to ");
+    if (virtualVal)
+        puts("VIRTUAL mode.\n");
+    else
+        puts("REAL mode.\n");
+
     return 0;
+}
+
+void ATComm_usage()
+{
+    puts("\nUsage: ATComm <string> \n"
+         "Enter CH9143 AT mode and send input string to CH9143 via MCU USART, the reply info will send back to MCU USART immediately,\n"
+         "and CH9143 will exit AT mode and MCU will send the reply info to host via CH9143 transparent data transfer.\n"
+         "Options:\n"
+         "<string> \t\t\t\tstring send to CH9143.(e.g. \"AT+TPL?\")\n"
+         "[-h]\t\t\t\tDisplay help information.\n");
 }
 
 int process_ATComm(int argc, const char *argv[])
 {
+    int ch;
+    bool isPrintUsage = false;
+
+    // Parse options.
+    optind = 1;
+    while ((ch = getopt(argc, argv, "rvh")) != -1)
+    {
+        switch (ch)
+        {
+        case 'h':
+            isPrintUsage = true;
+            break;
+        case '?':
+            printf("Unknown option `-%c'.\n", optopt);
+            isPrintUsage = true;
+            break;
+        }
+    }
+    // If command error ocurrs or '-h' option is selected, or more than one options are selected, print usage and exit.
+    if (isPrintUsage)
+    {
+        ATComm_usage();
+        return -1;
+    }
+
+    USART_AT_Proc.EnterATMode();
+    USART_AT_Proc.TransmitATMessage(argv[optind]);
+
     return 0;
 }
 
@@ -262,25 +427,23 @@ void PrintLoop()
         {
             if (isOutputBinary)
             {
-                float2chars=(char*)&originalInput[print_cnt];
-                if (dumpChannel==1)
-                    putchars(float2chars,4);
-                else if (dumpChannel==2)
-                    putchars(float2chars,2);
-                else if (dumpChannel==3)
-                    putchars(float2chars,2);                
+                float2chars = (char *)&originalInput[print_cnt];
+                if (dumpChannel == 1)
+                    putchars(float2chars, 4);
+                else if (dumpChannel == 2)
+                    putchars(float2chars, 2);
+                else if (dumpChannel == 3)
+                    putchars(float2chars, 2);
             }
             else
             {
-                if (dumpChannel==1)
-                    printf("%.*f\t", outDigits,originalInput[print_cnt++]);
-                else if (dumpChannel==2)
-                    printf("%.*f\t", outDigits,originalInput[print_cnt++]);
-                else if (dumpChannel==3)
-                    putchars(float2chars,2); 
-                
+                if (dumpChannel == 1)
+                    printf("%.*f\t", outDigits, originalInput[print_cnt++]);
+                else if (dumpChannel == 2)
+                    printf("%hu\t", *((uint16_t *)&originalInput[print_cnt++]));
+                else if (dumpChannel == 3)
+                    printf("%hu\t", *((uint16_t *)&originalInput[print_cnt++]));
             }
-                
         }
         else
             stage = AfterDump;
