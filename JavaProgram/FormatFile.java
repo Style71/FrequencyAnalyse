@@ -5,7 +5,7 @@ public class FormatFile {
     public static void main(String[] args) {
         try {
             Scanner input = new Scanner(new FileInputStream("Data.txt"));
-            String[] bytesStr = input.nextLine().split(", ");
+            String[] bytesStr = input.nextLine().split(" ");
             input.close();
 
             byte[] bytes = new byte[bytesStr.length];
@@ -21,6 +21,8 @@ public class FormatFile {
                         oneByte += c - '0';
                     else if (c >= 'a' && c <= 'f')
                         oneByte += c - 'a' + 10;
+                    else if (c >= 'A' && c <= 'F')
+                        oneByte += c - 'A' + 10;
                 }
                 bytes[i] = oneByte;
 

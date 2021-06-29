@@ -335,6 +335,7 @@ class RandomAccessQueue<T> {
         this.size = size;
         this.front = 0;
         this.rear = 0;
+        this.length = 0;
     }
 
     /**
@@ -416,6 +417,7 @@ class RandomAccessQueue<T> {
         }
         this.front = 0;
         this.rear = 0;
+        this.length = 0;
     }
 
     /**

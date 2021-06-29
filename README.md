@@ -84,7 +84,7 @@ This project consists of three parts:
 ## 测试 list
 
 - ~~观察报文发送频率，以检查TIM2采样时钟是否配置正确~~
-- 用Debug模式观察ADCBuffer数值，检查ADC采样设置是否正确；解释电压几百mV波动的原因；
+- ~~用Debug模式观察ADCBuffer数值，检查ADC采样设置是否正确；~~解释电压上百mV波动的原因；
 - ~~解决蓝牙连接问题~~
 
 ## Troubleshooting
