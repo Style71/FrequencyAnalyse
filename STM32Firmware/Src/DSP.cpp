@@ -69,7 +69,7 @@ bool virtualVal = true;
 BatteryStatus BattStatus;
 static double BattEstTotalCapacity = 450; // Battery estimated capacity in mAh.
 
-static bool isInRun = false;
+bool isInRun = false;
 
 extern int numOfSample;
 extern int sample_cnt;

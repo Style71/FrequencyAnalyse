@@ -51,11 +51,6 @@ typedef struct _BattStatus
 
 void signal_downsampling();
 
-extern bool channelEnable[3];
-extern bool virtualVal;
-#define PRINTLOOP_FREQ 500
-void PrintLoop();
-
 void InitFilter();
 
 #endif

@@ -18,10 +18,10 @@
 
 enum PrintState
 {
-    Normal = 0,
-    WaitSample = 1,
-    DumpSample = 2,
-    AfterDump = 3
+  Normal = 0,
+  WaitSample = 1,
+  DumpSample = 2,
+  AfterDump = 3
 };
 
 void getarg(char str[], int &argc, char *argv[]);
@@ -34,6 +34,7 @@ int process_ATComm(int argc, const char *argv[]);
 
 int process_ls();
 
+#define PRINTLOOP_FREQ 500
 void PrintLoop();
 
 #endif /* PROCESS_H_ */

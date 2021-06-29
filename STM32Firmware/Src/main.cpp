@@ -127,8 +127,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    run_scheduler();
     signal_downsampling();
+    run_scheduler();
     UpdateMessage();
     /*while (USART2_RX_Stream.size() > 0)
       USART_Putc(&huart1, USART2_RX_Stream.pop_front());

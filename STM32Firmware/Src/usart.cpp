@@ -234,10 +234,14 @@ int USART_Printf(UART_HandleTypeDef *huart, const char *pcString, ...)
   va_start(ap, pcString);
   //Formating the output string.
   sTotal = vsnprintf((char *)pucBuffer, PRINTF_BUFFER_SIZE, pcString, ap);
+  // The return value sTotal indicate the number of characters that would have been written if PRINTF_BUFFER_SIZE had been sufficiently large,
+  // not counting the terminating null character. If the resulting string would be longer than PRINTF_BUFFER_SIZE-1 characters,
+  // the remaining characters are discarded and not stored in pucBuffer, but counted in sTotal.
   if (sTotal > 0)
   {
-    // Write this portion of the string.
-    USART_Putchars(huart, pucBuffer, sTotal);
+    // Write this portion of the string. Since sTotal may not indicate the actuall characters count in pucBuffer,
+    // and pucBuffer is guaranteed to end with '\0', so we use puts() to transmit the message.
+    USART_Puts(huart, pucBuffer);
   }
   va_end(ap);
 

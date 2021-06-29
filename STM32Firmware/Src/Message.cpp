@@ -96,10 +96,10 @@ void SampleRoutine2(const char *pcString)
 	int argc;
 	char *argv[MAX_ARGX];
 
-	while (pcString[i] != '\0')
+	do
 	{
 		str[i] = pcString[i];
-	}
+	} while (pcString[i++] != '\0');
 
 	getarg(str, argc, argv);
 	if (argc == 0)

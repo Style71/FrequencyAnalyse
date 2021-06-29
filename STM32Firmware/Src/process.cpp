@@ -11,7 +11,7 @@ const char *processName[PROCESS_NUM] = {"dump", "mode", "ATComm"};
 #define stringizing(s) #s
 #define xstr(s) stringizing(s)
 
-#define printf(...) USART_Printf(&huart2, #__VA_ARGS__)
+#define printf(...) USART_Printf(&huart2, __VA_ARGS__)
 #define puts(str) USART_Puts(&huart2, str)
 #define putc(char) USART_Putc(&huart2, char)
 #define putchars(pucArray, size) USART_Putchars(&huart2, pucArray, size)
@@ -34,7 +34,8 @@ extern BatteryStatus BattStatus;
 
 extern bool virtualVal;
 extern ATModeMessage USART_AT_Proc;
-
+extern bool channelEnable[3];
+extern bool isInRun;
 //
 // getarg
 //
@@ -149,17 +150,17 @@ void getarg(char str[], int &argc, char *argv[])
 void dump_usage()
 {
     puts("\nUsage: dump [options <parameter>]\n"
-         "Record n ADC samples of the specified channel, and dump with the give format.\n"
-         "Options:\n"
-         "[-c <channel>]\t\t\t\tChannel selection.(1-RFID, 2-VIN, 3-IMON, default: 1)\n"
-         "[-n <number>]\t\t\t\tNumber of samples to be dumped.(1~" xstr(MAX_SAMPLE_NUM) ", default: " xstr(INIT_SAMPLE_NUM) ")\n"
-                                                                                                                            "\n"
-                                                                                                                            "[-f <format>]\t\t\t\tData output format.( For channel 1, default: .3f, for channel 2,3, dedfault: u )\n"
-                                                                                                                            "\tb\t\t\t\t32-bits float binary or 16-bits uint16_t binary, depending on the channel\n"
-                                                                                                                            "\t.Xf\t\t\t\t32-bits float text with X(0~" xstr(MAX_DIGITS) ", default:" xstr(INIT_DIGITS) ") digits, for channel 1 only\n"
-                                                                                                                                                                                                                        "\tu\t\t\t\t16-bits uint16_t text, for channel 2 or 3 only\n"
-                                                                                                                                                                                                                        "\n"
-                                                                                                                                                                                                                        "[-h]\t\t\t\t\tDisplay this information.\n");
+        "Record n ADC samples of the specified channel, and dump with the give format.\n"
+        "Options:\n"
+        "[-c <channel>]\t\t\t\tChannel selection.(1-RFID, 2-VIN, 3-IMON, default: 1)\n"
+        "[-n <number>]\t\t\t\tNumber of samples to be dumped.(1~" xstr(MAX_SAMPLE_NUM) ", default: " xstr(INIT_SAMPLE_NUM) ")\n"
+        "\n"
+        "[-f <format>]\t\t\t\tData output format.( For channel 1, default: .3f, for channel 2,3, dedfault: u )\n"
+        "\tb\t\t\t\t32-bits float binary or 16-bits uint16_t binary, depending on the channel\n"
+        "\t.Xf\t\t\t\t32-bits float text with X(0~" xstr(MAX_DIGITS) ", default:" xstr(INIT_DIGITS) ") digits, for channel 1 only\n"
+        "\tu\t\t\t\t16-bits uint16_t text, for channel 2 or 3 only\n"
+        "\n"
+        "[-h]\t\t\t\t\tDisplay this information.\n");
 }
 
 int process_dump(int argc, const char *argv[])
@@ -194,7 +195,7 @@ int process_dump(int argc, const char *argv[])
             {
                 isOutputBinary = true;
             }
-            else if ((optarg[0] == '.') && ((optarg[1] >= '0') && (optarg[1] <= '9')) && (optarg[2] == 'f'))
+            else if ((optarg[0] == '.') && ((optarg[1] >= '0') && (optarg[1] <= '9')) && (optarg[2] == 'f') && (dumpChannel == 1))
             {
                 isOutputBinary = false;
                 if ((optarg[1] >= '0') && (optarg[1] <= ('0' + MAX_DIGITS)))
@@ -202,9 +203,13 @@ int process_dump(int argc, const char *argv[])
                 else
                     printf("\nError： option -%c digits %i out of range 0~" xstr(MAX_DIGITS) ".\n", ch, optarg[1] - '0');
             }
+            else if ((strcmp(optarg, "u") == 0) && ((dumpChannel == 2) || (dumpChannel == 3)))
+            {
+                isOutputBinary = false;
+            }
             else
             {
-                printf("\nError： option -%c get illegal format %s.\n", ch, optarg);
+                printf("\nError： option -%c get illegal format %s for channel %i.\n", ch, optarg, dumpChannel);
                 isPrintUsage = true;
             }
             break;
@@ -233,7 +238,7 @@ int process_dump(int argc, const char *argv[])
     }
     // Output configurations.
     printf("\nData recording......\nChannel: %i, number of sample: %i, format: %s", dumpChannel, numOfSample, isOutputBinary ? "binary" : "text");
-    if (isOutputBinary)
+    if ((!isOutputBinary) && (dumpChannel == 1))
         printf(", digits: %i\n", outDigits);
     else
         putc('\n');
@@ -260,7 +265,6 @@ int process_mode(int argc, const char *argv[])
     int ch;
     bool isPrintUsage = false;
     bool isVirtual = false;
-    int optcnt = 0;
     // Parse options.
     optind = 1;
     while ((ch = getopt(argc, argv, "rvsh")) != -1)
@@ -269,15 +273,12 @@ int process_mode(int argc, const char *argv[])
         {
         case 'h':
             isPrintUsage = true;
-            optcnt++;
             break;
         case 'r':
             isVirtual = false;
-            optcnt++;
             break;
         case 'v':
             isVirtual = true;
-            optcnt++;
             break;
         case 's':
             printf("Current mode: %s.\n", virtualVal ? "VIRTUAL" : "REAL");
@@ -289,7 +290,7 @@ int process_mode(int argc, const char *argv[])
         }
     }
     // If command error ocurrs or '-h' option is selected, or more than one options are selected, print usage and exit.
-    if ((isPrintUsage) || (optcnt > 1))
+    if ((isPrintUsage) || (argc != 2))
     {
         mode_usage();
         return -1;
@@ -323,7 +324,7 @@ int process_ATComm(int argc, const char *argv[])
 
     // Parse options.
     optind = 1;
-    while ((ch = getopt(argc, argv, "rvh")) != -1)
+    while ((ch = getopt(argc, argv, "h")) != -1)
     {
         switch (ch)
         {
@@ -336,8 +337,8 @@ int process_ATComm(int argc, const char *argv[])
             break;
         }
     }
-    // If command error ocurrs or '-h' option is selected, or more than one options are selected, print usage and exit.
-    if (isPrintUsage)
+    // If command error ocurrs or '-h' option is selected, or more than one argument are passed, print usage and exit.
+    if ((isPrintUsage) || (argc != 2))
     {
         ATComm_usage();
         return -1;
@@ -370,6 +371,9 @@ void PrintLoop()
     static int loop_cnt = 0;
 
     char *float2chars;
+
+    if (!isInRun)
+        return;
 
     switch (stage)
     {
@@ -438,12 +442,13 @@ void PrintLoop()
             else
             {
                 if (dumpChannel == 1)
-                    printf("%.*f\t", outDigits, originalInput[print_cnt++]);
+                    printf("%.*f\t", outDigits, originalInput[print_cnt]);
                 else if (dumpChannel == 2)
-                    printf("%hu\t", *((uint16_t *)&originalInput[print_cnt++]));
+                    printf("%hu\t", *((uint16_t *)&originalInput[print_cnt]));
                 else if (dumpChannel == 3)
-                    printf("%hu\t", *((uint16_t *)&originalInput[print_cnt++]));
+                    printf("%hu\t", *((uint16_t *)&originalInput[print_cnt]));
             }
+            print_cnt++;
         }
         else
             stage = AfterDump;
