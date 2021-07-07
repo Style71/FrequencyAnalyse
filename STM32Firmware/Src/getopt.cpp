@@ -10,12 +10,18 @@ int optind = 1;
 int optopt;         // unknown option character or an option with a missing required argument,
 const char *optarg; // char pointer points to arguments of related option.
 
-// check if p is a valid option and if the option takes an arg
-static char isvalidopt(char p, const char *options, int &takesarg, int &argoptional)
+/**
+  * @brief  Check if p is a valid option and if the option takes an argument.
+  * @param  p Option characters to be checked.
+  * @param  options Option string that specifies the option characters that are valid for this program.
+  * @param  takesarg If the matched option character takes an argument, takesarg is set to 1; 
+  *                  if the argument is optional, takesarg is set to 2; else, 0.
+  * @retval p if matches; '?' if mismatch.
+  */
+static char isvalidopt(char p, const char *options, int &takesarg)
 {
     int idx = 0;
     takesarg = 0;
-    argoptional = 0;
 
     while (options[idx] != 0 && p != options[idx])
     {
@@ -31,18 +37,19 @@ static char isvalidopt(char p, const char *options, int &takesarg, int &argoptio
     {
         takesarg = 1;
         if (options[idx + 2] == ':')
-            argoptional = 1;
+            takesarg = 2;
     }
 
     return options[idx];
 }
 
-//
-// reorder
-//
-// Reorder argv and put non-options at the end.
-// returns:
-//            the valid option count in argv.
+/**
+  * @brief  Reorder argv and put non-options at the end.
+  * @param  argc Number of arguments in the array.
+  * @param  argv Arguments string array.
+  * @param  options Option string that specifies the option characters that are valid for this program.
+  * @retval The last valid option index in argv.
+  */       
 static int reorder(int argc, const char *argv[], const char *options)
 {
     const char *tmp_argv[argc];
@@ -51,12 +58,11 @@ static int reorder(int argc, const char *argv[], const char *options)
     int optidx = 1;
     int nonoptidx = argc - 1;
     int takesarg;
-    int argoptional;
 
     // move the options to the front, and add non-options to the end
     while (idx < argc && argv[idx] != 0)
     {
-        if ((argv[idx][0] == '-') && ((c = isvalidopt(argv[idx][1], options, takesarg, argoptional)) != '?'))
+        if ((argv[idx][0] == '-') && ((c = isvalidopt(argv[idx][1], options, takesarg)) != '?'))
         {
             tmp_argv[optidx++] = argv[idx++];
 
@@ -84,42 +90,29 @@ static int reorder(int argc, const char *argv[], const char *options)
     return optidx - 1;
 }
 
-//
-// getopt
-//
-// @int optopt
-// When getopt encounters an unknown option character or an option with a missing required argument,
-// it stores that option character in this variable. You can use this for providing your own diagnostic messages.
-//
-// @int optind
-// This variable is set by getopt to the index of the next element of the argv array to be processed.
-// Once getopt has found all of the option arguments, you can use this variable to determine where the remaining non-option arguments begin.
-// The initial value of this variable is 1.
-//
-// @char *optarg
-// This variable is set by getopt to point at the value of the option argument, for those options that accept arguments.
-//
-// @const char *options
-// The options argument is a string that specifies the option characters that are valid for this program.
-// An option character in this string can be followed by a colon (‘:’) to indicate that it takes a required argument.
-// If an option character is followed by two colons (‘::’), its argument is optional; this is a GNU extension.
-//
-// returns:
-//            the valid option character
-//            '?' if any option is unknown
-//            -1 if no remaining options
-//
-// When no more option arguments are available, it returns -1.
-// There may still be more non-option arguments; you must compare the external variable optind against the argc parameter to check this.
-// If getopt finds an option character in argv that was not included in options, or a missing option argument,
-// it returns ‘?’ and sets the external variable optopt to the actual option character.
-//
+/**
+  * @brief  Get valid option characters specified by options string.
+  * @param  argc Number of arguments in the array.
+  * @param  argv Arguments string array.
+  * @param  options The options argument is a string that specifies the option characters that are valid for this program.
+  *                 An option character in this string can be followed by a colon (‘:’) to indicate that it takes a required argument.
+  *                 If an option character is followed by two colons (‘::’), its argument is optional; this is a GNU extension.
+  * @param  optopt When getopt encounters an unknown option character or an option with a missing required argument,
+  *                 it stores that option character in this global variable. You can use this for providing your own diagnostic messages.
+  * @param  optind  This global variable is set by getopt to the index of the next element of the argv array to be processed.
+  *                 Once getopt has found all of the option arguments, you can use this variable to determine where the remaining non-option arguments begin.
+  *                 The initial value of this variable is 1.
+  * @param  optarg This global variable is set by getopt to point at the value of the option argument, for those options that accept arguments.
+  * @retval The valid option character is returned when option match occur; When no more option arguments are available, it returns -1.
+  *         There may still be more non-option arguments; you must compare the external variable optind against the argc parameter to check this.
+  *         If getopt finds an option character in argv that was not included in options, or a missing option argument,
+  *         it returns ‘?’ and sets the external variable optopt to the actual option character..
+  */
 int getopt(int argc, const char *argv[], const char *options)
 {
     const char *p;
     char c;
     int takesarg;
-    int argOptional;
     static int optargc = 0; // Valid option index in reordered argv.
 
     if (optind == 1)
@@ -140,7 +133,7 @@ int getopt(int argc, const char *argv[], const char *options)
 
     if (p && options && optind && p[0] == '-')
     {
-        c = isvalidopt(p[1], options, takesarg, argOptional);
+        c = isvalidopt(p[1], options, takesarg);
         optopt = p[1];
 
         if (c == '?')
@@ -152,11 +145,11 @@ int getopt(int argc, const char *argv[], const char *options)
         {
             if ((optind > optargc) || (argv[optind][0] == '-'))
             {
-                if (!argOptional)
+                if (takesarg==1)
                 { //Error: option takes an argument, but there is no more argument
                     return (int)'?';
                 }
-                else
+                else// Argument is optional.
                     return (int)c;
             }
 

@@ -227,6 +227,9 @@ else
 # Clean command in Ubuntu shell.
 	rm -rf $(BUILD_DIR)/*.d $(BUILD_DIR)/*.o $(BUILD_DIR)/*.lst
 endif
+
+distclean: clean
+	rm -rf $(BUILD_DIR)
 #######################################
 # dependencies
 #######################################

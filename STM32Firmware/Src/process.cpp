@@ -36,12 +36,15 @@ extern bool virtualVal;
 extern ATModeMessage USART_AT_Proc;
 extern bool channelEnable[3];
 extern bool isInRun;
-//
-// getarg
-//
-// This function parses the input string to argc and argv. No memmory is allocated in the function,
-// and char pointers in argv point to corresponding address in str[]. This function will change content
-// in str, redundant space, indent and newline characters in str is excluded.
+
+/**
+  * @brief  This function parses the input string to argc and argv. No memmory is allocated in the function,
+  *         and char pointers in argv point to corresponding address in str[]. This function will change content
+  *         in str, redundant space, indent and newline characters in str is excluded.
+  * @param  str String to be parsed.
+  * @param  argc Number of arguments in the array.
+  * @param  argv Arguments string array.
+  */  
 void getarg(char str[], int &argc, char *argv[])
 {
     int head = 0;

@@ -63,7 +63,7 @@ float basefreq[3] = {30, 100, 300};
 
 //float filteredOutput[1024];
 bool channelEnable[3] = {true, true, true};
-bool virtualVal = true;
+bool virtualVal = false;
 
 #define SCALE_ADC_12BIT_CURRENT_INTEGRAL_TO_MAH (ADC_SCALE_BITS_TO_VOLT * SCALE_IMON_VOLT_TO_I_MA / (SAMPLE_FREQ * 3600.0))
 BatteryStatus BattStatus;
