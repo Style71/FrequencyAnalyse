@@ -1,0 +1,105 @@
+Altium Designer Pick and Place Locations,,,,,,,
+D:\MyDocuments\ADProject\SignalAnalyseV3.0\Project Outputs for SignalAnalyseV3.0\Pick Place for SignalAnalyse.csv,,,,,,,
+,,,,,,,
+========================================================================================================================,,,,,,,
+File Design Information:,,,,,,,
+,,,,,,,
+Date:       18/01/21,,,,,,,
+Time:       10:50,,,,,,,
+Revision:   Not in VersionControl,,,,,,,
+Variant:    No variations,,,,,,,
+Units used: mil,,,,,,,
+,,,,,,,
+Designator,Comment,Layer,Footprint,Center-X(mil),Center-Y(mil),Rotation,Description
+U7,LM73100RPWR,TopLayer,VQFN-HR-10_2X2_TEX,3756.551,2809.543,270,"2.7 - 23 V, 5.5 A Integrated Ideal Diode with Input Reverse Polarity and Overvoltage Protection"
+R15,Res 34K¶∏ °¿1%,TopLayer,402,3705.551,2899.701,270,Resistor
+R14,Res 2.2K¶∏ °¿1%,TopLayer,402,3770.551,2720.701,90,Resistor
+R12,Res 147K¶∏ °¿1%,TopLayer,402,3669.551,2899.701,270,Resistor
+R11,Res 47K¶∏ °¿1%,TopLayer,402,3741,2925.685,270,Resistor
+R10,Res 42.2K¶∏ °¿1%,TopLayer,402,3780.995,2905,270,Resistor
+R9,Res 56K¶∏ °¿1%,TopLayer,402,3833,2902,360,Resistor
+R8,Res 360K¶∏ °¿1%,TopLayer,402,3842.551,2846.701,270,Resistor
+C11,Cap 100nF,TopLayer,402,3804.551,2720.701,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0402 100nF 10VDC X5R 5%
+ANT1,Ceramic Antenna,BottomLayer,ANTC5020,3200,4093,180,"2.4GHz Antenna - 2.4GHz, 5GHz, Bluetooth, WiFi, WLAN, Zigbee"
+R45,Res 12K¶∏ °¿2%,TopLayer,805,4840,3650,90,Resistor
+C9,Cap 10¶ÃF,TopLayer,603,3846.551,2759.701,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 10UF 25V 10% 0603
+C8,Cap 1¶ÃF,TopLayer,603,3668.551,2782.26,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 1uF 25V X6S 10%
+C7,Cap 1.3nF,TopLayer,402,3720.551,2723.016,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0402 1.3nF 50VDC X7R 5%
+USB,Micro USB Jack,BottomLayer,Jack (Female),3722,2539.5,360,USB¡¨Ω”∆˜ Micro USB Type AB Connectors
+Y4,6.78MHz,TopLayer,HC49/4HSMX,4852,3179,180,Industry standard SMD crystal HC49/4HSMX 6.780MHZ-20PF-30PPM
+Y2,32.768KHz,BottomLayer,FC-135,3765.064,4120,180,Crystal Oscillator FC-135 32.768000KHZ-12.5PF-20PPM
+Y1,32MHz,BottomLayer,SMD2016-4N,3443,3927,270,Quartz Crystal Units YSX211SL 32MHZ-10PF-10PPM
+U5,XPS62912RPUR,BottomLayer,VQFN-HR 1mm,4179.75,2685.5,270," 3-V to 17-V, 2-A/3-A Low Noise and Low Ripple Buck Converter with Integrated Ferrite Bead Filter Compensation"
+U3,CH9143,BottomLayer,QFN28_4X4,3644.979,3968.031,270,Bluetooth-LowEnergy & UART & USB Mutual Transport
+R13,Res 12.7K¶∏ °¿1%,TopLayer,603,4929,3847,180,Resistor
+R7,Res 1K¶∏ °¿1%,TopLayer,603,3731,3247,90,Resistor
+R6,Res 100K¶∏ °¿1%,BottomLayer,603,3676,3800,90,Resistor
+R2,Res 4.7K¶∏ °¿1%,BottomLayer,402,4036,2643.732,90,Resistor
+R1,Res 14.7K¶∏ °¿1%,BottomLayer,402,4089,2730,90,Resistor
+L2,Inductor 22 ¶ÃH,BottomLayer,805,3851,3964,360,Multilayer Chip Ferrite Large Current Inductor
+L1,Inductor 4.7 ¶ÃH,BottomLayer,XGL4030,4231,2868,180,Coilcraft Shielded Power Inductors
+FB1,"Ferrite Bead, 20Ohm@100MHz",BottomLayer,BEADC2012X110N,4420.535,2813,360,WE-CBA SMT EMI Suppression Ferrite Bead 
+D3,LED-Green,TopLayer,805,3731,3379,90,"Green LEDs, 2V 20mA 570 nm"
+D2,Diode,TopLayer,SOD3716X135N,5060.102,4042,360,"Surface Mount Schottky Power Rectifier, 0.5 AMPERES 40 VOLTS"
+D1,Diode,BottomLayer,SODFL3616X98N,3888,2696,180,"Surface Mount Schottky Power Rectifier, 1.0 AMPERES 20 VOLTS"
+C40,Cap 2.2¶ÃF,BottomLayer,603,3442,4007,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT CGA 0603 16V 2.2uF X5R 10% AEC-Q200
+C39,Cap 100nF,BottomLayer,603,3608.064,4108,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C38,Cap 2.2¶ÃF,BottomLayer,603,3859.441,4020,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT CGA 0603 16V 2.2uF X5R 10% AEC-Q200
+C37,Cap 2.2¶ÃF,BottomLayer,603,3827.559,3908,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT CGA 0603 16V 2.2uF X5R 10% AEC-Q200
+C20,Cap 100nF,TopLayer,603,4928.559,3945,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 100nF+/-10% 50V X7R 1608
+C10,Cap 47nF,TopLayer,603,4928,3896,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 47nF+/-10% 50V X7R 1608
+C6,Cap 47¶ÃF,BottomLayer,805,4453,2694,270,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0805 10V 47uF X5R 20% T: 1.25mm
+C5,Cap 47¶ÃF,BottomLayer,805,4357,2692,270,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0805 10V 47uF X5R 20% T: 1.25mm
+C4,Cap 47¶ÃF,BottomLayer,805,4280,2692,270,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0805 10V 47uF X5R 20% T: 1.25mm
+C3,Cap 470nF,BottomLayer,603,4090,2638,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 0.47uF 6.3volts X5R 10%
+C2,Cap 2.2nF,BottomLayer,402,4193.315,2609,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0402 2200pF 50volts X7R 10%
+C1,Cap 22¶ÃF,BottomLayer,805,4193,2555,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0805 35VDC 22uF 20% X5R 1.25mm
+C36,Cap 100nF,TopLayer,1210,4709.997,3018.147,180,"∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT MLCC,1210,C0G,50V,0.1uF,2.5mm"
+C24,Cap 100pF,TopLayer,603,5111,3780,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0201 100pF 50volts C0G +/-2%
+C23,Cap Var,TopLayer,Variable_Capacitor_JZ400HV1,5113,3892,360,"Trimmer Capacitors - Ceramic Dielectric, 8 pF to 40 pF, 350 V"
+C25,Cap 100pF,TopLayer,603,5146,3623,270,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0201 100pF 50volts C0G +/-2%
+C26,Cap 300pF,TopLayer,603,5110.567,3470,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 300pF 50volts C0G 2%
+L03,Inductor 220 nH,TopLayer,603,5192,2992,90,Chip Coils Inductor
+C27,Cap Var,TopLayer,Variable_Capacitor_JZ400HV1,5104,3358,360,"Trimmer Capacitors - Ceramic Dielectric, 8 pF to 40 pF, 350 V"
+R25,Res 1¶∏ °¿1%,TopLayer,603,5201,4042,90,Resistor
+C35,Cap 0~200pF,TopLayer,603,5111,3715,360,Do not place
+C33,Cap 0~200pF,TopLayer,603,5110.567,3533,180,Do not place
+C34,Cap 33pF,TopLayer,603,5215,3623,270,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 33pF 50volts C0G 5%
+C32,Cap 10n,BottomLayer,603,4963,2499,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.01UF 25V 5% 0603 C0G
+C29,Cap 10¶ÃF,BottomLayer,603,4796,2479,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 10UF 25V 10% 0603
+U6,LT1117IST-5#PBF,BottomLayer,SOT-223,4969,2699,90,800mA Low Dropout Positive Regulators Fixed 5V
+C30,Cap 22u,BottomLayer,603,4998,2910,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 22UF 10V 20% 0603
+C28,Cap 100nF,BottomLayer,603,5147,2677,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C21,Cap 820p,TopLayer,603,4641,2820.567,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 820pF 100volts X7R 5%
+C22,Cap 200p,TopLayer,603,4822,2808,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 200pF 100volts C0G 2%
+U4,LT1016,TopLayer,SOIC 8-Lead,5005.163,2877.147,360,Ultra Fast Precision Comparator
+R21,Res 2.2K¶∏ °¿1%,TopLayer,603,4821.147,2944.147,90,Resistor
+R22,Res 2.2K¶∏ °¿1%,TopLayer,603,4713,2821.567,90,Resistor
+R23,Res 2.2K¶∏ °¿1%,TopLayer,603,4989,3021,360,Resistor
+R24,Res 22¶∏ °¿1%,TopLayer,603,4675,2911,180,Resistor
+U1,STM32F767VIT6,TopLayer,LQFP-100,4233,3712,90,ARM MCU 32-BITS
+R47,Res 10K¶∏ °¿1%,TopLayer,603,4931,3748,360,Resistor
+R46,Res 1K¶∏ °¿1%,TopLayer,603,4905,3668.78,270,Resistor
+R42,Res 1K¶∏ °¿1%,TopLayer,603,4278.472,3017,180,Resistor
+R41,Res 10K¶∏ °¿1%,BottomLayer,603,4231.472,3254,180,Resistor
+OSC1,16MHz,TopLayer,SMD/SMT_3.2X2.5,4278,3137,90,±Í◊º ±÷”’Òµ¥∆˜ SMD XTAL OSC 16MHZ +/-50PPM -40~105C 250TR
+FB3,"Ferrite Bead, 20Ohm@100MHz",TopLayer,BEADC2012X110N,4129,2910,180,WE-CBA SMT EMI Suppression Ferrite Bead 
+D4,TDZ3V0J,TopLayer,SOD323F,4942,3590,180,Zener Diode 3V
+C61,Cap 33nF,TopLayer,603,4959,3671.441,270,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 0.033uF 6.3volts U2J 5%
+C60,Cap 22¶ÃF,TopLayer,805,4840,3810,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0805 25VDC 22uF 20% X5R 1.25mm
+C56,Cap 100nF,TopLayer,603,4279,2964,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C55,Cap 10¶ÃF,TopLayer,603,4278.559,2912,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 10UF 25V 10% 0603
+C54,Cap 100nF,BottomLayer,603,4233.441,3309,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C53,Cap 4.7¶ÃF,TopLayer,603,4278.559,2859,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 4.7uF 25V X5R 20%
+C52,Cap 2.2¶ÃF,TopLayer,603,4638,3904.441,270,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT CGA 0603 16V 2.2uF X5R 10% AEC-Q200
+C51,Cap 2.2¶ÃF,TopLayer,603,4030.441,4142,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT CGA 0603 16V 2.2uF X5R 10% AEC-Q200
+C50,Cap 100nF,TopLayer,603,3843,3477.441,270,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C49,Cap 100nF,TopLayer,603,3975.441,4092,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C48,Cap 100nF,TopLayer,603,4688,3959.559,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C47,Cap 100nF,TopLayer,603,4628,3489.559,90,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C46,Cap 100nF,TopLayer,603,4166,3276,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C45,Cap 100nF,TopLayer,603,4405.441,3202,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C44,Cap 100nF,TopLayer,603,4338,3317,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0.1UF 16V 10% 0603
+C43,Cap 1¶ÃF,TopLayer,603,4338,3267,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 1uF 25V X6S 10%
+C42,Cap 1¶ÃF,TopLayer,603,4405.441,3152,180,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 1uF 25V X6S 10%
+C41,Cap 1¶ÃF,TopLayer,603,4134.441,3333,360,∂‡≤„Ã’¥…µÁ»›∆˜MLCC - SMD/SMT 0603 1uF 25V X6S 10%
