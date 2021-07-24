@@ -24,6 +24,6 @@ Use the following command to clone the project to your local host.
 
 ```bash
 git clone https://github.com/Style71/FrequencyAnalyse.git
-git submodule update --init --recursive
 git checkout V3.0
+git submodule update --init --recursive
 ```
