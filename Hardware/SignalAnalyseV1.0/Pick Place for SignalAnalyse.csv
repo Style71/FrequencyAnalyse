@@ -1,0 +1,102 @@
+Altium Designer Pick and Place Locations,,,,,,,
+D:\MyDocuments\ADProject\SignalAnalyse\Project Outputs for SignalAnalyse\Pick Place for SignalAnalyse.csv,,,,,,,
+,,,,,,,
+========================================================================================================================,,,,,,,
+File Design Information:,,,,,,,
+,,,,,,,
+Date:       04/04/20,,,,,,,
+Time:       11:02,,,,,,,
+Revision:   Not in VersionControl,,,,,,,
+Variant:    No variations,,,,,,,
+Units used: mil,,,,,,,
+,,,,,,,
+Designator,Comment,Layer,Footprint,Center-X(mil),Center-Y(mil),Rotation,Description
+C36,GRM188R61A226ME15D,TopLayer,1608[0603],4769,3295,270,Capacitor (Semiconductor SIM Model)
+D5,SMMBD301LT3G,TopLayer,SOT96P237X111-3N,3023.402,2677.661,270,Schottky Barrier Diodes
+R26,Magnetic Beed,TopLayer,603,5001,2972,0,Wurth Magnetic Bead
+C24,Cap,TopLayer,603,5051,3832,180,Capacitor_for resonance
+C23,Cap Var,TopLayer,Variable_Capacitor_JZ400HV1,5101,3942,180,Variable or Adjustable Capacitor
+C25,Cap,TopLayer,603,4936,3652,270,Capacitor_for resonance
+C26,random value needs carefully address,TopLayer,603,5051,3452,0,Capacitor_for resonance
+L03,Inductor 220 nH,TopLayer,Ferrite_bead_0805inch_2012mm,5016,3172,90,220nH
+C27,Cap Var,TopLayer,Variable_Capacitor_JZ400HV1,5101,3327,180,Variable or Adjustable Capacitor
+R25,,TopLayer,603,5101,4062,180,Resistor
+C35,Cap,TopLayer,603,5051,3767,180,Capacitor_for resonance
+C33,random value needs carefully address,TopLayer,603,5051,3537,0,Capacitor_for resonance
+C34,Cap,TopLayer,603,5016,3652,270,Capacitor_for resonance
+C20,Cap 4.7n,TopLayer,603,4654,4103.567,270,Capacitor
+C32,Cap 10n,TopLayer,603,4871,2782,90,Capacitor
+C31,Cap 10n,TopLayer,603,3291,2505,270,Capacitor
+R94,Magnetic Beed,TopLayer,603,4174,2483,90,Resistor
+R93,Magnetic Beed,TopLayer,603,4252,2483,270,Resistor
+C29,Cap 10u,TopLayer,603,4791,2782,90,Capacitor
+U6,LT1117IST-5#PBF,TopLayer,SOT230P700X180-4N,4461,2728,180,
+C30,Cap 22u,TopLayer,603,4731,2682,90,Capacitor
+C28,Cap 100n,TopLayer,603,4656,2682,90,Capacitor
+C9,Cap 10n,TopLayer,603,4594,4103.567,270,Capacitor
+C14,Cap 10u,TopLayer,603,3358,2505,270,Capacitor
+C15,Cap 22u,TopLayer,603,3689,2797,180,Capacitor
+C21,Cap 820p,TopLayer,603,4481,3537.984,90,Capacitor
+C22,Cap 200p,TopLayer,603,4581,3502.984,0,Capacitor
+Com2,LT1016,TopLayer,LT1016_SOIC,4621,3292.984,270,
+D4,SMMBD301LT3G,TopLayer,SOT96P237X111-3N,4774,4086,270,Schottky Barrier Diodes
+R13,Res1,TopLayer,603,4529,4103.567,270,Resistor
+R91,Magnetic Beed,TopLayer,603,4594,3813.433,270,Wurth Magnetic Bead
+R21,Res1 2.2k,TopLayer,603,4706,3562.984,0,Resistor
+R22,Res1 2.2k,TopLayer,603,4581,3562.984,0,Resistor
+R23,Res1 2.2k,TopLayer,603,4606,3117,180,Resistor
+R24,Res1 22,TopLayer,603,4581,3627,0,Resistor
+U4,LT1117IST-3.3#PBF,TopLayer,SOT230P700X180-4N,3535,2667,90,Integrated Circuit
+Swi1,Switch_219-2MSTR,TopLayer,Switch_219-2MSTR,2530.5,2547,270,
+BT1,Battery,TopLayer,Battery,2346,3297,90,Multicell Battery
+BT2,Battery,BottomLayer,Battery,2346,3297,270,Multicell Battery
+R92,Magnetic Beed,TopLayer,603,4512,3813.433,90,Wurth Magnetic Bead
+Y4,TSX3325_13.56MHz,TopLayer,HC_49Crystal,4521,2982,180,
+U3,HC-06,BottomLayer,HC-06,3761.61,3758.854,180,Decawave's DW1000 Ultra Wideband (UWB) transceiver IC
+U2,CH340E,BottomLayer,CH340E,3234.74,3093.315,360,USB-UART Converter
+U1,STM32F767VIT6,TopLayer,STM32F767VIT6,3646,3723,90,Imported
+RESET,Button,TopLayer,K2-1107ST-A4SW-06,3326,3177.5,90,
+S2,Button,TopLayer,K2-1107ST-A4SW-06,3141,3513.5,270,
+S1,Button,TopLayer,K2-1107ST-A4SW-06,2981,3513.5,270,
+R51,Res,BottomLayer,J1-0603,3136.472,3538,180,Resistor
+R50,Res,BottomLayer,J1-0603,3136.472,3588,360,Resistor
+R49,Res,BottomLayer,J1-0603,2973.559,3540.5,360,Resistor
+R48,Res,BottomLayer,J1-0603,2973.559,3593,180,Resistor
+R47,Res,TopLayer,J1-0603,4086,3108,180,Resistor
+R46,Res,TopLayer,J1-0603,4031,3187.528,90,Resistor
+R45,Res,TopLayer,J1-0603,3981.472,3108,180,Resistor
+R44,Res,BottomLayer,J1-0603,3090,3359,360,Resistor
+R43,Res,BottomLayer,J1-0603,3410.528,3548,360,Resistor
+R42,Res,TopLayer,J1-0603,3691.472,3028,180,Resistor
+R41,Res,BottomLayer,J1-0603,3316.472,3218,180,Resistor
+OSC1,16MHz,TopLayer,OSC_3.2X2.5,3691,3148,90,OSC with disable function
+J2,Header 4,TopLayer,HDR1X4,2957,3968,90,"Header, 4-Pin"
+J1,JTAG Header,TopLayer,HDR2X4,3141,3968,90,"Header, 4-Pin, Dual row"
+FB1,120Ohm@100MHz,TopLayer,L0805,3554,2922,180,CBW201209U121T
+D3,LED-Green,TopLayer,D0805,3131,3233,90,
+D2,TDZ3V0J,TopLayer,SOD-323,4067,3273,180,Zener Diode 3V
+D1,LED,TopLayer,D0805,3211,3233,90,UWB_TX_LED
+USB,MicroUSB,BottomLayer,USB_Micro-AB,2998,2537.5,360,USB
+C63,GRM188R61A226ME15D,BottomLayer,1608[0603],3133.559,3488,180,Capacitor (Semiconductor SIM Model)
+C62,GRM188R61A226ME15D,BottomLayer,1608[0603],2973.559,3488,360,Capacitor (Semiconductor SIM Model)
+C61,Cap Semi,TopLayer,1608[0603],4058.559,3333,180,Capacitor (Semiconductor SIM Model)
+C60,Cap Ceramic,TopLayer,C0805,4031,2998,270,
+C59,GRM188R61A226ME15D,BottomLayer,1608[0603],3233.441,2972,180,Capacitor (Semiconductor SIM Model)
+C58,GRM188R61A226ME15D,BottomLayer,1608[0603],4091,3460.441,270,Capacitor (Semiconductor SIM Model)
+C57,GRM188R61A226ME15D,BottomLayer,1608[0603],4141,3460.441,270,Capacitor (Semiconductor SIM Model)
+C56,GRM188R61A226ME15D,TopLayer,1608[0603],3692,2975,360,Capacitor (Semiconductor SIM Model)
+C55,GRM188R61A226ME15D,TopLayer,1608[0603],3691.559,2923,360,Capacitor (Semiconductor SIM Model)
+C54,GRM188R61A226ME15D,BottomLayer,1608[0603],3318.441,3273,180,Capacitor (Semiconductor SIM Model)
+C53,GRM188R61A226ME15D,TopLayer,1608[0603],3691,2846,180,Capacitor (Semiconductor SIM Model)
+C52,GRM188R61A226ME15D,TopLayer,1608[0603],4051,3915.441,270,Capacitor (Semiconductor SIM Model)
+C51,GRM188R61A226ME15D,TopLayer,1608[0603],3443.441,4153,360,Capacitor (Semiconductor SIM Model)
+C50,GRM188R61A226ME15D,TopLayer,1608[0603],3256,3488.441,270,Capacitor (Semiconductor SIM Model)
+C49,GRM188R61A226ME15D,TopLayer,1608[0603],3388.441,4103,180,Capacitor (Semiconductor SIM Model)
+C48,GRM188R61A226ME15D,TopLayer,1608[0603],4101,3970.559,90,Capacitor (Semiconductor SIM Model)
+C47,GRM188R61A226ME15D,TopLayer,1608[0603],4041,3500.559,90,Capacitor (Semiconductor SIM Model)
+C46,GRM188R61A226ME15D,TopLayer,1608[0603],3563.559,3248,360,Capacitor (Semiconductor SIM Model)
+C45,GRM188R61A226ME15D,TopLayer,1608[0603],3818.441,3213,180,Capacitor (Semiconductor SIM Model)
+C44,GRM188R61A226ME15D,TopLayer,1608[0603],3751,3328,360,Capacitor (Semiconductor SIM Model)
+C43,GRM188R61A226ME15D,TopLayer,1608[0603],3751,3278,360,Capacitor (Semiconductor SIM Model)
+C42,GRM188R61A226ME15D,TopLayer,1608[0603],3818.441,3163,180,Capacitor (Semiconductor SIM Model)
+C41,GRM188R61A226ME15D,TopLayer,1608[0603],3518.559,3303,360,Capacitor (Semiconductor SIM Model)
