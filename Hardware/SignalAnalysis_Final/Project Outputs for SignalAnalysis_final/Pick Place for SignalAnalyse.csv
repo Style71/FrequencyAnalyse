@@ -1,0 +1,116 @@
+Altium Designer Pick and Place Locations,,,,,,,
+D:\MyDocuments\STM32Program\FrequencyAnalyse\Hardware\SignalAnalysis_Final\Project Outputs for SignalAnalysis_final\Pick Place for SignalAnalyse.csv,,,,,,,
+,,,,,,,
+========================================================================================================================,,,,,,,
+File Design Information:,,,,,,,
+,,,,,,,
+Date:       30/08/21,,,,,,,
+Time:       09:46,,,,,,,
+Revision:   efb4060e96f3e49ef5482a0a6ed2a59cd4830c93,,,,,,,
+Variant:    No variations,,,,,,,
+Units used: mm,,,,,,,
+,,,,,,,
+Designator,Comment,Layer,Footprint,Center-X(mm),Center-Y(mm),Rotation,Description
+D2,Diode,TopLayer,SOD3716X135N,128.5266,102.6668,360,Surface Mount Schottky Power Rectifier
+U8,OPA607,TopLayer,OPA607IDCKR,121.2596,87.9856,180,
+R51,,TopLayer,J1-0603,120.5738,91.3384,0,Resistor
+R50,,TopLayer,J1-0603,122.7328,90.8812,90,Resistor
+R49,,TopLayer,J1-0603,123.1646,84.5058,360,Resistor
+R48,,TopLayer,J1-0603,120.4722,85.7758,180,Resistor
+C65,,TopLayer,1608[0603],120.523,90.0684,0,Capacitor (Semiconductor SIM Model)
+C64,Cap Semi,TopLayer,1608[0603],118.2116,88.3158,90,Capacitor (Semiconductor SIM Model)
+C63,Cap Semi,TopLayer,1608[0603],122.047,94.1832,0,Capacitor (Semiconductor SIM Model)
+C62,Cap Semi,TopLayer,1608[0603],123.19,85.7758,180,Capacitor (Semiconductor SIM Model)
+Swi1,Switch_219-2MSTR,TopLayer,Switch_219-2MSTR,83.4009,72.1614,90,
+C41,GRM188R61A226ME15D,TopLayer,1608[0603],105.0148,84.6582,360,Capacitor (Semiconductor SIM Model)
+C42,GRM188R61A226ME15D,TopLayer,1608[0603],111.8982,80.0608,180,Capacitor (Semiconductor SIM Model)
+C43,GRM188R61A226ME15D,TopLayer,1608[0603],110.1852,82.9818,360,Capacitor (Semiconductor SIM Model)
+C44,GRM188R61A226ME15D,TopLayer,1608[0603],110.1852,84.2518,360,Capacitor (Semiconductor SIM Model)
+C45,GRM188R61A226ME15D,TopLayer,1608[0603],111.8982,81.3308,180,Capacitor (Semiconductor SIM Model)
+C46,GRM188R61A226ME15D,TopLayer,1608[0603],105.8164,83.2104,360,Capacitor (Semiconductor SIM Model)
+C47,GRM188R61A226ME15D,TopLayer,1608[0603],116.967,88.3412,90,Capacitor (Semiconductor SIM Model)
+C48,GRM188R61A226ME15D,TopLayer,1608[0603],115.7732,102.0064,270,Capacitor (Semiconductor SIM Model)
+C49,GRM188R61A226ME15D,TopLayer,1608[0603],100.9762,103.9368,180,Capacitor (Semiconductor SIM Model)
+C50,GRM188R61A226ME15D,TopLayer,1608[0603],97.6122,88.327,270,Capacitor (Semiconductor SIM Model)
+C51,GRM188R61A226ME15D,TopLayer,1608[0603],102.3732,105.2068,360,Capacitor (Semiconductor SIM Model)
+C52,GRM188R61A226ME15D,TopLayer,1608[0603],117.8052,99.1728,270,Capacitor (Semiconductor SIM Model)
+C53,GRM188R61A226ME15D,TopLayer,1608[0603],108.6754,72.6186,180,Capacitor (Semiconductor SIM Model)
+C54,GRM188R61A226ME15D,BottomLayer,1608[0603],107.5294,84.0486,180,Capacitor (Semiconductor SIM Model)
+C55,GRM188R61A226ME15D,TopLayer,1608[0603],108.6754,73.9648,360,Capacitor (Semiconductor SIM Model)
+C56,GRM188R61A226ME15D,TopLayer,1608[0603],108.6866,75.2856,360,Capacitor (Semiconductor SIM Model)
+C60,Cap Ceramic,TopLayer,603,124.079,98.8314,270,
+C61,Cap Semi,TopLayer,1608[0603],122.047,95.4024,0,Capacitor (Semiconductor SIM Model)
+D4,TDZ3V0J,TopLayer,SOD-323,121.7422,92.7608,0,Zener Diode 3V
+FB3,Bead,TopLayer,BEADC2012X110N,104.8766,73.914,180,Wurth Ferrite Bead
+OSC1,16MHz,TopLayer,OSC_3.2X2.5,108.6612,79.6798,90,OSC with disable function
+R41,Res 2.2K次 ㊣1%,BottomLayer,J1-0603,107.4794,82.6516,180,Resistor
+R42,Res 2.2K次 ㊣1%,TopLayer,J1-0603,108.6732,76.6318,180,Resistor
+R46,,TopLayer,J1-0603,123.444,96.6216,180,Resistor
+R47,,TopLayer,J1-0603,121.9454,97.917,180,Resistor
+U1,STM32F767VIT6,TopLayer,STM32F767VIT6,107.5182,94.2848,90,
++,Battery,BottomLayer,Battery,70.9168,83.7184,270,Multicell Battery
+-,Battery,TopLayer,Battery,70.9168,83.7184,90,Multicell Battery
+R24,Res 2.2K次 ㊣1%,TopLayer,J1-0603,118.745,73.9394,180,Resistor
+R23,Res 2.2K次 ㊣1%,TopLayer,J1-0603,126.7206,76.7334,360,Resistor
+R22,Res 2.2K次 ㊣1%,TopLayer,J1-0603,119.7102,71.6678,90,Resistor
+R21,Res 2.2K次 ㊣1%,TopLayer,J1-0603,122.4571,74.7813,90,Resistor
+U4,LT1016,TopLayer,LT1016_SOIC,127.1311,73.0795,360,
+C22,Cap 200p,TopLayer,603,122.4788,71.3232,90,Capacitor
+C21,Cap 820p,TopLayer,603,117.8814,71.6424,90,Capacitor
+C28,Cap 100n,BottomLayer,603,130.7338,67.9958,90,Capacitor
+C30,Cap 22u,BottomLayer,603,126.9492,73.914,180,Capacitor
+U6,LT1117IST-5#PBF,BottomLayer,SOT230P700X180-4N,126.2126,68.5546,90,
+C29,Cap 10u,BottomLayer,603,126.0856,62.1284,180,Capacitor
+C32,Cap 10n,BottomLayer,603,126.0602,63.4746,180,Capacitor
+C34,Cap,TopLayer,603,132.461,92.0242,270,Capacitor_for resonance
+C33,random value needs carefully address,TopLayer,603,129.8084,89.7382,180,Capacitor_for resonance
+C35,Cap,TopLayer,603,129.8194,94.361,360,Capacitor_for resonance
+R25,Res 2.2K次 ㊣1%,TopLayer,J1-0603,132.0546,102.8446,90,Resistor
+C27,Cap Var,TopLayer,Variable_Capacitor_JZ400HV1,129.6416,85.2932,360,Variable or Adjustable Capacitor
+L03,Inductor 220 nH,TopLayer,Ferrite_bead_0805inch_2012mm,131.8768,75.9968,90,220nH
+C26,random value needs carefully address,TopLayer,603,129.8084,88.138,180,Capacitor_for resonance
+C25,Cap,TopLayer,603,130.7084,92.0242,270,Capacitor_for resonance
+C23,Cap Var,TopLayer,Variable_Capacitor_JZ400HV1,129.8702,98.8568,360,Variable or Adjustable Capacitor
+C24,Cap,TopLayer,603,129.8194,96.012,360,Capacitor_for resonance
+C1,Multilayer Ceramic Capacitor,BottomLayer,C0805,106.5022,64.897,360,
+C2,Cap Semi,BottomLayer,402,106.5102,66.2686,180,Capacitor (Semiconductor SIM Model)
+C4,Multilayer Ceramic Capacitor,BottomLayer,C0805,108.712,68.3768,270,
+C5,Multilayer Ceramic Capacitor,BottomLayer,C0805,110.6678,68.3768,270,
+C6,Multilayer Ceramic Capacitor,BottomLayer,C0805,113.1062,68.4276,270,
+C20,Cap 100n,TopLayer,603,122.9868,102.7176,180,Capacitor
+C37,GRM188R61A226ME15D,BottomLayer,603,97.22,99.2632,180,Capacitor (Semiconductor SIM Model)
+C38,GRM188R61A226ME15D,BottomLayer,603,98.0298,102.108,180,Capacitor (Semiconductor SIM Model)
+C39,GRM188R61A226ME15D,BottomLayer,1608[0603],91.6448,104.3432,360,Capacitor (Semiconductor SIM Model)
+C40,GRM188R61A226ME15D,BottomLayer,1608[0603],87.4268,101.7778,360,Capacitor (Semiconductor SIM Model)
+D3,LED-Green,TopLayer,D0805,94.7674,85.8266,90,
+FB1,Beed,BottomLayer,BEADC2012X110N,112.2816,71.4502,360,Wurth Ferrite Bead
+L1,XGL4030,BottomLayer,XGL4030,107.4674,72.8472,180,Coilcraft Shielded Power Inductors
+L2,22uH,BottomLayer,L0805,97.8154,100.6856,360,
+R1,14.7K次 ㊣1%,BottomLayer,LC-0402_R,103.8606,69.342,90,泂え萇郯
+R2,4.7K次 ㊣1%,BottomLayer,LC-0402_R,102.5144,67.1508,90,泂え萇郯
+R6,Res 2.2K次 ㊣1%,BottomLayer,J1-0603,93.3704,96.52,90,Resistor
+R7,Res 2.2K次 ㊣1%,TopLayer,J1-0603,94.7674,82.4738,90,Resistor
+R13,Res 12.7K次 ㊣1%,TopLayer,J1-0603,122.9868,103.9368,0,Resistor
+U3,CH9143,BottomLayer,QFN28_4X4,92.5825,100.788,270,Bluetooth-LowEnergy & UART & USB Mutual Transport
+U5,XPS62912RPUR,BottomLayer,VQFN-HR10_RPU_TEX,106.1657,68.2117,270,No Description Available
+Y1,32M,BottomLayer,SMD2016-4N,87.4522,99.7458,270,Quartz Crystal Oscillator
+Y2,32.768K,BottomLayer,Q13FC1350000400,95.6326,104.648,180,Crystal Oscillator
+Y4,CRYSTAL,TopLayer,HC-49SMD,123.2408,80.7466,180,Industry standard SMD crystal
+C7,Cap Semi,TopLayer,402,94.502,69.1646,90,嗣脯枎棟萇�暔蠬LCC - SMD/SMT 1.3nF 50VDC X7R 5% 0402
+C8,Cap Semi,TopLayer,603,93.091,70.3072,90,嗣脯枎棟萇�暔蠬LCC - SMD/SMT 0603 1uF 25V X6S 10%
+C9,Cap Semi,TopLayer,603,97.7646,69.8246,90,Capacitor (Semiconductor SIM Model)
+ANT1,2450AT42A100E,BottomLayer,ANTC5020X110N,81.28,103.9622,180,Antenna
+C11,Cap Semi,TopLayer,402,96.6356,69.1058,90,嗣脯枎棟萇�暔蠬LCC - SMD/SMT 100nF 10VDC X5R 5% 0402
+R8,Res 2.2K次 ㊣1%,TopLayer,0402-A,97.6008,72.3062,270,Resistor
+R9,Res 2.2K次 ㊣1%,TopLayer,0402-A,97.3582,73.7108,360,Resistor
+R10,Res 2.2K次 ㊣1%,TopLayer,0402-A,96.0373,73.787,270,Resistor
+R11,Res 2.2K次 ㊣1%,TopLayer,0402-A,95.0214,74.3124,270,Resistor
+R12,Res 2.2K次 ㊣1%,TopLayer,0402-A,93.2066,73.6524,270,Resistor
+R14,Res 2.2K次 ㊣1%,TopLayer,0402-A,95.772,69.1058,90,Resistor
+R15,Res 2.2K次 ㊣1%,TopLayer,0402-A,94.121,73.6524,270,Resistor
+U7,LM73100RPWR,TopLayer,VQFN-HR-10_2X2_TEX,95.4164,71.3624,270,No Description Available
+R91,Magnetic Beed,TopLayer,603,119.4054,62.103,180,Wurth Magnetic Bead
+R92,Magnetic Beed,TopLayer,603,116.1796,62.103,180,Wurth Magnetic Bead
+C10,Cap 100n,TopLayer,603,122.9614,101.1936,180,Capacitor
+C3,Cap Semi,BottomLayer,1608[0603],103.886,67.0052,90,Capacitor (Semiconductor SIM Model)
+C36,C3225C0G1H104JT000N,BottomLayer,C1210,126.8984,76.454,0,Capacitor (Semiconductor SIM Model)
